@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0d0d0f" />
+  <meta name="apple-mobile-web-app-title" content="Score Ctrl" />
+  <title>Basketball Controller</title>
+  <link rel="icon" href="assets/icons/basketball-ball-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <link rel="manifest" href="controller.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="controller.css" />
+</head>
+<body class="theme-dark paused controller-mode">
+  <button id="fullscreenBtn" class="fullscreen-btn" type="button">Full Screen</button>
+  <div class="scoreboard-container">
+    <div class="scoreboard">
+      <div class="team-section home-team">
+        <div class="team-label">HOME</div>
+        <input id="homeName" class="ctrl-input" type="text" maxlength="24" placeholder="Home Team" />
+
+        <div class="score-control">
+          <button id="homeScoreMinus">-</button>
+          <div class="score-display" id="homeScore">0</div>
+          <button id="homeScorePlus">+</button>
+        </div>
+
+        <div class="team-stats">
+          <div class="stat-item">
+            <span class="stat-label">FOULS</span>
+            <div class="mini-control">
+              <button id="homeFoulMinus">-</button>
+              <span class="stat-value" id="homeFouls">0</span>
+              <button id="homeFoulPlus">+</button>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">TIMEOUTS</span>
+            <div class="mini-control">
+              <button id="homeTimeoutMinus">-</button>
+              <span class="stat-value" id="homeTimeouts">0</span>
+              <button id="homeTimeoutPlus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="score-add-row">
+          <button id="homeAdd1">1</button>
+          <button id="homeAdd2">2</button>
+          <button id="homeAdd3">3</button>
+        </div>
+        <div class="home-quick-controls">
+          <div class="home-time-quick-row">
+            <button id="homeTimeMinusBtn" type="button" aria-label="Set Time Minus">-</button>
+            <button id="homeApplyTimeBtn" type="button">Set Time</button>
+            <button id="homeTimePlusBtn" type="button" aria-label="Set Time Plus">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-section">
+        <div class="game-info">
+          <div class="period-display">
+            <span class="period-label">QUARTER</span>
+            <select id="quarterSelect" class="ctrl-select">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="clock-display" id="timerText">10:00</div>
+
+        <div class="secondary-info">
+          <div class="shot-clock-container">
+            <span class="shot-label">SHOT CLOCK</span>
+            <span class="shot-value" id="shotClockText">24</span>
+          </div>
+          <div class="possession-row">
+            <button id="posHomeBtn" type="button" aria-label="Home Ball">◀</button>
+            <button id="posNoneBtn" type="button" aria-label="No Ball">•</button>
+            <button id="posAwayBtn" type="button" aria-label="Away Ball">▶</button>
+          </div>
+          <div class="status-display" id="statusText">PAUSED</div>
+          <div class="control-state" id="controlText">Control: checking...</div>
+        </div>
+
+        <div class="control-grid">
+          <div class="row-main">
+            <button id="gameToggleBtn" class="primary">Play Game Clock</button>
+          </div>
+          <div class="row-main">
+            <button id="resetGameBtn">Reset 10:00</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-section away-team">
+        <div class="team-label">AWAY</div>
+        <input id="awayName" class="ctrl-input" type="text" maxlength="24" placeholder="Away Team" />
+
+        <div class="score-control">
+          <button id="awayScoreMinus">-</button>
+          <div class="score-display" id="awayScore">0</div>
+          <button id="awayScorePlus">+</button>
+        </div>
+
+        <div class="team-stats">
+          <div class="stat-item">
+            <span class="stat-label">FOULS</span>
+            <div class="mini-control">
+              <button id="awayFoulMinus">-</button>
+              <span class="stat-value" id="awayFouls">0</span>
+              <button id="awayFoulPlus">+</button>
+            </div>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">TIMEOUTS</span>
+            <div class="mini-control">
+              <button id="awayTimeoutMinus">-</button>
+              <span class="stat-value" id="awayTimeouts">0</span>
+              <button id="awayTimeoutPlus">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="score-add-row">
+          <button id="awayAdd1">1</button>
+          <button id="awayAdd2">2</button>
+          <button id="awayAdd3">3</button>
+        </div>
+        <div class="row-shot away-shot-row">
+          <button id="shot14Btn">Shot 14</button>
+          <button id="shot24Btn">Shot 24</button>
+          <button id="shotToggleBtn">SHOT CLOCK</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button id="resetAllBtn" class="reset-all">Reset All</button>
+  <script type="module" src="controller.js"></script>
+</body>
+</html>

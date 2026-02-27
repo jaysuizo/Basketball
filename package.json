@@ -1,0 +1,26 @@
+{
+  "name": "basketball",
+  "version": "1.0.0",
+  "description": "This project displays a basketball scoreboard using data stored in **Firebase**.   The UI shows home/away scores, fouls, timeouts, game clock, shot clock, and possession.   Data is synchronized in real-time from Firebase, so updates in the database reflect immediately on the scoreboard.   **The scoreboard automatically listens for changes, so the UI updates instantly when the game data changes.**",
+  "main": "controller.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jaysuizo/Basketball.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jaysuizo/Basketball/issues"
+  },
+  "homepage": "https://github.com/jaysuizo/Basketball#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.1.0",
+    "@capacitor/cli": "^8.1.0",
+    "@capacitor/core": "^8.1.0"
+  }
+}

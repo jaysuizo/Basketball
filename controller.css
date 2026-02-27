@@ -1,0 +1,237 @@
+body.controller-mode {
+  min-height: 100dvh;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
+    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  overflow: hidden;
+}
+
+.controller-mode .scoreboard-container {
+  max-width: none;
+  width: 100%;
+  height: calc(100dvh - 24px);
+}
+
+.controller-mode .scoreboard {
+  height: 100%;
+}
+
+.controller-mode .scoreboard {
+  animation: none;
+}
+
+.fullscreen-btn {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000;
+}
+
+.ctrl-input,
+.ctrl-select {
+  width: 100%;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--text-muted);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-family: "Rajdhani", sans-serif;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.ctrl-select {
+  width: 84px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: 14px;
+  padding: 6px 8px;
+}
+
+.score-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.score-add-row {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.home-quick-controls {
+  margin-top: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.home-time-quick-row {
+  display: grid;
+  grid-template-columns: 44px auto 44px;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+#homeApplyTimeBtn {
+  width: auto;
+  padding: 6px 10px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+#homeAdd1,
+#awayAdd1 {
+  border-color: rgba(34, 197, 94, 0.7);
+  color: #86efac;
+}
+
+#homeAdd2,
+#awayAdd2 {
+  border-color: rgba(245, 158, 11, 0.75);
+  color: #fcd34d;
+}
+
+#homeAdd3,
+#awayAdd3 {
+  border-color: rgba(59, 130, 246, 0.75);
+  color: #93c5fd;
+}
+
+.mini-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.possession-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.possession-row button {
+  font-size: 22px;
+  line-height: 1;
+  padding: 8px 10px;
+}
+
+.possession-row button.active-home {
+  border-color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
+  color: #ffd2c1;
+}
+
+.possession-row button.active-none {
+  border-color: color-mix(in srgb, var(--text-muted) 70%, transparent);
+  color: var(--text-secondary);
+}
+
+.possession-row button.active-away {
+  border-color: color-mix(in srgb, var(--possession-color) 70%, transparent);
+  color: #c6f5ff;
+}
+
+.control-grid {
+  width: 100%;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row-main,
+.row-shot {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  align-items: center;
+}
+
+.row-main {
+  grid-template-columns: 1fr;
+}
+
+.row-main #gameToggleBtn {
+  justify-self: center;
+  min-width: 220px;
+}
+
+.row-main #resetGameBtn {
+  justify-self: center;
+  width: 170px;
+}
+
+.row-shot {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.away-shot-row {
+  margin-top: 10px;
+}
+
+#endGameBtn.danger {
+  background: color-mix(in srgb, var(--color-paused) 20%, var(--bg-tertiary));
+  border-color: color-mix(in srgb, var(--color-paused) 75%, transparent);
+  color: #ffd5de;
+}
+
+.controller-mode button {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--text-muted);
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+}
+
+.controller-mode button:hover {
+  filter: brightness(1.1);
+}
+
+.controller-mode button.primary {
+  border-color: color-mix(in srgb, var(--color-live) 45%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--color-live) 30%, transparent);
+}
+
+.controller-mode button.danger {
+  border-color: color-mix(in srgb, var(--color-paused) 55%, transparent);
+}
+
+.control-state {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+.reset-all {
+  position: fixed;
+  left: 14px;
+  bottom: 14px;
+  z-index: 20;
+}
+
+body.is-fullscreen .fullscreen-btn {
+  opacity: 0.75;
+}
+
+@media (max-width: 768px) {
+  .row-shot {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .home-time-quick-row {
+    grid-template-columns: 40px auto 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .row-shot {
+    grid-template-columns: 1fr;
+  }
+}

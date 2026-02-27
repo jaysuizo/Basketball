@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <title>Basketball Scoreboard - Live</title>
+    <link rel="icon" href="assets/icons/basketball-ball-icon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body class="theme-dark paused">
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+    </button>
+
+    <div class="scoreboard-container">
+        <div class="scoreboard">
+
+            <!-- Home Team Section -->
+            <div class="team-section home-team" id="homeTeam">
+                <div class="possession-indicator"></div>
+                <div class="team-label" id="homeTeamLabel">HOME</div>
+                <div class="score-display" id="homeScore">0</div>
+                <div class="team-stats">
+                    <div class="stat-item fouls">
+                        <span class="stat-label">FOULS</span>
+                        <span class="stat-value" id="homeFouls">0</span>
+                        <div class="dot-row" id="homeFoulDots"></div>
+                    </div>
+                    <div class="stat-item timeouts">
+                        <span class="stat-label">TIMEOUTS</span>
+                        <span class="stat-value" id="homeTimeouts">0</span>
+                        <div class="dot-row" id="homeTimeoutDots"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Info Section -->
+            <div class="center-section">
+                <div class="game-info">
+                    <div class="period-display">
+                        <span class="period-label" id="periodLabel">QUARTER</span>
+                        <span class="period-value">
+                            <span id="period">1</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="clock-display" id="gameClock">12:00</div>
+
+                <div class="secondary-info">
+                    <div class="shot-clock-container">
+                        <span class="shot-label">SHOT CLOCK</span>
+                        <span class="shot-value" id="shotClock">24</span>
+                    </div>
+                    <div class="status-display" id="status">PAUSED</div>
+                </div>
+            </div>
+
+            <!-- Away Team Section -->
+            <div class="team-section away-team" id="awayTeam">
+                <div class="possession-indicator"></div>
+                <div class="team-label" id="awayTeamLabel">AWAY</div>
+                <div class="score-display" id="awayScore">0</div>
+                <div class="team-stats">
+                    <div class="stat-item fouls">
+                        <span class="stat-label">FOULS</span>
+                        <span class="stat-value" id="awayFouls">0</span>
+                        <div class="dot-row" id="awayFoulDots"></div>
+                    </div>
+                    <div class="stat-item timeouts">
+                        <span class="stat-label">TIMEOUTS</span>
+                        <span class="stat-value" id="awayTimeouts">0</span>
+                        <div class="dot-row" id="awayTimeoutDots"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Live Indicator -->
+        <div class="live-indicator" id="liveIndicator">
+            <span class="live-dot"></span>
+            <span class="live-text" id="liveText">LIVE</span>
+        </div>
+    </div>
+
+    <!-- End Game Overlay -->
+    <div class="end-game-overlay" id="endGameOverlay">
+        <div class="end-game-content">
+            <div class="end-game-label">FINAL</div>
+            <div class="end-game-winner" id="endGameWinner">HOME WINS</div>
+            <div class="end-game-score" id="endGameScore">0 – 0</div>
+        </div>
+    </div>
+
+    <script type="module" src="firebase.js"></script>
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>

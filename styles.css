@@ -1,0 +1,1028 @@
+/* ========================================
+   CSS VARIABLES & THEMES
+   ======================================== */
+
+:root {
+  /* Dark Theme (Default) */
+  --bg-primary: #0d0d0f;
+  --bg-secondary: #1a1a1f;
+  --bg-tertiary: #252530;
+  --text-primary: #ffffff;
+  --text-secondary: #b4b4c0;
+  --text-muted: #6e6e7e;
+
+  /* Accent Colors */
+  --accent-primary: #ff6b35;
+  --accent-secondary: #f7931e;
+  --accent-glow: rgba(255, 107, 53, 0.4);
+
+  /* Status Colors */
+  --color-live: #00ff88;
+  --color-live-glow: rgba(0, 255, 136, 0.45);
+  --color-paused: #ff3b5c;
+  --color-paused-glow: rgba(255, 59, 92, 0.45);
+  --color-ended: #a78bfa;
+  --color-ended-glow: rgba(167, 139, 250, 0.45);
+  --color-offline: #6b7280;
+  --color-offline-glow: rgba(107, 114, 128, 0.3);
+  --color-warning: #ffc107;
+  /* Dynamic status color token — switches with body class */
+  --color-status: var(--color-paused);
+  --color-status-glow: var(--color-paused-glow);
+
+  /* Possession */
+  --possession-color: #00d9ff;
+  --possession-glow: rgba(0, 217, 255, 0.5);
+
+  /* Shadows & Effects */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+}
+
+.theme-light {
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8e8ed;
+  --text-primary: #1d1d1f;
+  --text-secondary: #424245;
+  --text-muted: #86868b;
+  --accent-primary: #ff6b35;
+  --accent-secondary: #f7931e;
+  --accent-glow: rgba(255, 107, 53, 0.2);
+  --possession-color: #0066cc;
+  --possession-glow: rgba(0, 102, 204, 0.3);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+/* ========================================
+   STATUS COLOR TOKENS
+   body class drives --color-status everywhere
+   ======================================== */
+
+body.running {
+  --color-status: var(--color-live);
+  --color-status-glow: var(--color-live-glow);
+}
+
+body.paused {
+  --color-status: var(--color-paused);
+  --color-status-glow: var(--color-paused-glow);
+}
+
+body.game-ended {
+  --color-status: var(--color-ended);
+  --color-status-glow: var(--color-ended-glow);
+}
+
+/* ========================================
+   GLOBAL STYLES
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family:
+    "Rajdhani",
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Background Pattern */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: repeating-linear-gradient(0deg,
+      transparent,
+      transparent 2px,
+      var(--bg-secondary) 2px,
+      var(--bg-secondary) 4px);
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================
+   THEME TOGGLE
+   ======================================== */
+
+.theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--bg-tertiary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  box-shadow: var(--shadow-md);
+}
+
+.theme-toggle:hover {
+  background: var(--bg-tertiary);
+  transform: scale(1.05);
+  box-shadow: var(--shadow-lg);
+}
+
+.theme-toggle svg {
+  color: var(--text-primary);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.theme-dark .sun-icon {
+  opacity: 0;
+  transform: rotate(180deg) scale(0);
+  position: absolute;
+}
+
+.theme-dark .moon-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.theme-light .sun-icon {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.theme-light .moon-icon {
+  opacity: 0;
+  transform: rotate(-180deg) scale(0);
+  position: absolute;
+}
+
+/* ========================================
+   SCOREBOARD CONTAINER
+   ======================================== */
+
+.scoreboard-container {
+  width: 100%;
+  max-width: 1600px;
+  position: relative;
+  z-index: 1;
+}
+
+.scoreboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 24px;
+  width: 100%;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   TEAM SECTIONS
+   ======================================== */
+
+.team-section {
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
+}
+
+.team-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg,
+      var(--accent-primary),
+      var(--accent-secondary));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Possession Indicator */
+.possession-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 80px;
+  background: var(--possession-color);
+  border-radius: 0 4px 4px 0;
+  opacity: 0;
+  transition: all 0.4s ease;
+  box-shadow: 0 0 20px var(--possession-glow);
+}
+
+.home-team .possession-indicator {
+  left: 0;
+}
+
+.away-team .possession-indicator {
+  right: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+/* Active Possession State */
+.team-section.has-possession {
+  border-color: var(--possession-color);
+  box-shadow:
+    0 0 30px var(--possession-glow),
+    var(--shadow-lg);
+  transform: scale(1.02);
+}
+
+.team-section.has-possession::before {
+  opacity: 1;
+}
+
+.team-section.has-possession .possession-indicator {
+  opacity: 1;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 20px var(--possession-glow);
+  }
+
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 40px var(--possession-glow);
+  }
+}
+
+/* Leading Team Highlight */
+.team-section.is-leading .score-display {
+  color: var(--accent-primary);
+  text-shadow: 0 0 30px var(--accent-glow);
+}
+
+/* Team Labels */
+.team-label {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(28px, 4vw, 40px);
+  letter-spacing: 4px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Score Display */
+.score-display {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(100px, 15vw, 180px);
+  line-height: 1;
+  text-align: center;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+  margin: 24px 0;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.score-display.score-changed {
+  animation: scoreChange 0.6s ease-out;
+}
+
+@keyframes scoreChange {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.15);
+    color: var(--accent-primary);
+    text-shadow: 0 0 40px var(--accent-glow);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Team Stats */
+.team-stats {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-top: 20px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-label {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.stat-value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(36px, 5vw, 48px);
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+/* Dot Row Indicators */
+.dot-row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 1.5px solid var(--text-muted);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.dot.dot-foul {
+  background: var(--text-secondary);
+  border-color: var(--text-secondary);
+}
+
+.stat-item.fouls.high-fouls .dot.dot-foul {
+  background: var(--color-warning);
+  border-color: var(--color-warning);
+  box-shadow: 0 0 6px rgba(255, 193, 7, 0.5);
+}
+
+.stat-item.fouls.danger-fouls .dot.dot-foul {
+  background: var(--color-paused);
+  border-color: var(--color-paused);
+  box-shadow: 0 0 8px rgba(255, 59, 92, 0.6);
+}
+
+.dot.dot-timeout {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 4px var(--accent-glow);
+}
+
+/* High Fouls Warning */
+.stat-item.fouls .stat-value {
+  transition: color 0.3s ease;
+}
+
+.stat-item.fouls.high-fouls .stat-value {
+  color: var(--color-warning);
+}
+
+.stat-item.fouls.danger-fouls .stat-value {
+  color: var(--color-paused);
+  animation: foulWarning 1s ease-in-out infinite;
+}
+
+@keyframes foulWarning {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* ========================================
+   CENTER SECTION
+   ======================================== */
+
+.center-section {
+  background: var(--bg-secondary);
+  border-radius: 20px;
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+
+body.running .center-section,
+body.paused .center-section,
+body.game-ended .center-section {
+  border-color: color-mix(in srgb, var(--color-status) 25%, transparent);
+  box-shadow: var(--shadow-lg), 0 0 32px color-mix(in srgb, var(--color-status) 18%, transparent);
+}
+
+.center-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 50%,
+      var(--bg-tertiary) 0%,
+      transparent 70%);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* Status accent bar at top of center panel */
+.center-section::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--color-status), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease, background 0.4s ease;
+  border-radius: 0 0 4px 4px;
+}
+
+body.running .center-section::after,
+body.paused .center-section::after,
+body.game-ended .center-section::after {
+  opacity: 1;
+}
+
+.center-section>* {
+  position: relative;
+  z-index: 1;
+}
+
+/* Game Info */
+.game-info {
+  width: 100%;
+}
+
+.period-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.period-label {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.period-label.ot-label {
+  color: #f7b731;
+  letter-spacing: 3px;
+  animation: otPulse 2s ease-in-out infinite;
+}
+
+@keyframes otPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.center-section.is-overtime .clock-display {
+  color: #f7b731 !important;
+}
+
+body.running .center-section.is-overtime .clock-display {
+  color: #f7b731 !important;
+  text-shadow: 0 0 30px rgba(247, 183, 49, 0.5);
+}
+
+.period-value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(40px, 5vw, 52px);
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.period-separator {
+  color: var(--text-muted);
+  margin: 0 4px;
+}
+
+/* Clock Display */
+.clock-display {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(96px, 13vw, 160px);
+  line-height: 1;
+  text-align: center;
+  color: var(--text-primary);
+  font-weight: 400;
+  letter-spacing: 4px;
+  margin: 32px 0;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+/* Clock States — color driven by --color-status token */
+body.paused .clock-display,
+body.running .clock-display,
+body.game-ended .clock-display {
+  color: var(--color-status);
+  transition: color 0.4s ease, text-shadow 0.4s ease;
+}
+
+body.paused .clock-display {
+  animation: clockPulse 1.5s ease-in-out infinite;
+}
+
+body.game-ended .clock-display {
+  opacity: 0.5;
+}
+
+@keyframes clockPulse {
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 20px var(--color-status-glow);
+  }
+  50% {
+    opacity: 0.7;
+    text-shadow: 0 0 40px var(--color-status-glow);
+  }
+}
+
+/* Secondary Info */
+.secondary-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.shot-clock-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border: 2px solid var(--bg-tertiary);
+  transition: all 0.3s ease;
+}
+
+.shot-label {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.shot-value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(44px, 6vw, 60px);
+  color: var(--accent-primary);
+  font-weight: 400;
+  letter-spacing: 1px;
+  min-width: 70px;
+  text-align: center;
+}
+
+/* Shot Clock Warning States */
+.shot-clock-container.warning {
+  border-color: var(--color-warning);
+  background: rgba(255, 193, 7, 0.1);
+}
+
+.shot-clock-container.warning .shot-value {
+  color: var(--color-warning);
+}
+
+.shot-clock-container.danger {
+  border-color: var(--color-paused);
+  background: rgba(255, 59, 92, 0.1);
+  animation: shotClockDanger 0.5s ease-in-out infinite;
+}
+
+.shot-clock-container.danger .shot-value {
+  color: var(--color-paused);
+}
+
+@keyframes shotClockDanger {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Status Display */
+.status-display {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border-radius: 20px;
+  background: var(--bg-tertiary);
+  transition: all 0.3s ease;
+}
+
+body.running .status-display,
+body.paused .status-display,
+body.game-ended .status-display {
+  color: var(--color-status);
+  background: color-mix(in srgb, var(--color-status) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-status) 30%, transparent);
+  transition: color 0.4s ease, background 0.4s ease, border-color 0.4s ease;
+}
+
+/* ========================================
+   LIVE INDICATOR
+   ======================================== */
+
+.live-indicator {
+  position: absolute;
+  top: -50px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Show indicator for all game states */
+body.running .live-indicator,
+body.paused .live-indicator,
+body.game-ended .live-indicator {
+  opacity: 1;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-status);
+  box-shadow: 0 0 0 0 var(--color-status);
+  animation: livePulse 2s ease-in-out infinite;
+  transition: background 0.4s ease;
+}
+
+/* Only pulse when running */
+body.paused .live-dot,
+body.game-ended .live-dot {
+  animation: none;
+  opacity: 0.8;
+}
+
+@keyframes livePulse {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 var(--color-status-glow);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+.live-text {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-status);
+  text-transform: uppercase;
+  transition: color 0.4s ease;
+}
+
+/* Disconnected State — overrides all */
+.live-indicator.disconnected .live-dot {
+  background: var(--color-offline);
+  animation: none;
+  box-shadow: none;
+}
+
+.live-indicator.disconnected .live-text {
+  color: var(--color-offline);
+}
+
+/* ========================================
+   END GAME OVERLAY
+   ======================================== */
+
+.end-game-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.end-game-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.end-game-content {
+  text-align: center;
+  animation: endGameReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes endGameReveal {
+  from { transform: scale(0.85) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);       opacity: 1; }
+}
+
+.end-game-label {
+  font-family: "Rajdhani", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.end-game-winner {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(56px, 10vw, 96px);
+  line-height: 1;
+  letter-spacing: 4px;
+  color: var(--accent-primary);
+  text-shadow: 0 0 60px var(--accent-glow);
+  margin-bottom: 20px;
+}
+
+.end-game-score {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: clamp(40px, 6vw, 64px);
+  letter-spacing: 6px;
+  color: var(--text-secondary);
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablet Landscape (1024px and below) */
+@media (max-width: 1024px) {
+  .scoreboard {
+    gap: 20px;
+  }
+
+  .team-section,
+  .center-section {
+    padding: 28px 24px;
+  }
+
+  .possession-indicator {
+    height: 60px;
+  }
+}
+
+/* Tablet Portrait (768px and below) */
+@media (max-width: 768px) {
+  body {
+    padding: 16px;
+  }
+
+  .theme-toggle {
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .scoreboard {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .team-section {
+    padding: 24px 20px;
+  }
+
+  .possession-indicator {
+    display: none;
+  }
+
+  .team-section.has-possession {
+    transform: scale(1);
+  }
+
+  .team-section.has-possession::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: var(--possession-color);
+    box-shadow: 0 0 15px var(--possession-glow);
+  }
+
+  .center-section {
+    padding: 32px 24px;
+    order: -1;
+  }
+
+  .live-indicator {
+    top: auto;
+    bottom: -50px;
+  }
+}
+
+/* Mobile (480px and below) */
+@media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
+
+  .theme-toggle {
+    width: 40px;
+    height: 40px;
+    top: 12px;
+    right: 12px;
+  }
+
+  .scoreboard {
+    gap: 12px;
+  }
+
+  .team-section,
+  .center-section {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .team-label {
+    font-size: 24px;
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+
+  .score-display {
+    margin: 16px 0;
+    font-size: clamp(80px, 20vw, 120px);
+  }
+
+  .team-stats {
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .stat-label {
+    font-size: 14px;
+  }
+
+  .stat-value {
+    font-size: clamp(32px, 8vw, 40px);
+  }
+
+  .center-section {
+    padding: 24px 20px;
+  }
+
+  .period-display {
+    margin-bottom: 16px;
+  }
+
+  .period-label {
+    font-size: 16px;
+  }
+
+  .period-value {
+    font-size: clamp(32px, 8vw, 44px);
+  }
+
+  .clock-display {
+    margin: 24px 0;
+    font-size: clamp(72px, 18vw, 120px);
+  }
+
+  .shot-clock-container {
+    padding: 10px 20px;
+  }
+
+  .shot-label {
+    font-size: 15px;
+  }
+
+  .shot-value {
+    font-size: clamp(36px, 10vw, 48px);
+  }
+
+  .status-display {
+    font-size: 15px;
+    letter-spacing: 2px;
+    padding: 8px 18px;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus Styles */
+button:focus-visible {
+  outline: 3px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* High Contrast Support */
+@media (prefers-contrast: high) {
+
+  .team-section,
+  .center-section {
+    border: 2px solid var(--text-secondary);
+  }
+
+  .shot-clock-container {
+    border-width: 3px;
+  }
+}

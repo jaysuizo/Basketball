@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "scoreboard": {
+      ".read": true,
+      ".write": "auth != null && auth.token.role === 'referee'"
+    },
+    "controlLock": {
+      ".read": true,
+      ".write": "auth != null && auth.token.role === 'referee'"
+    }
+  }
+}

@@ -1,0 +1,23 @@
+# Node / npm
+node_modules/
+npm-debug.log*
+
+# Generated web bundle for Capacitor
+apk-web/
+
+# Capacitor Android generated/build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/captures/
+android/.idea/
+android/*.iml
+
+# Gradle
+.gradle/
+build/
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
