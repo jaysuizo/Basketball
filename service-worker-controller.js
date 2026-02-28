@@ -1,4 +1,4 @@
-const CACHE_NAME = "scoreboard-controller-v8";
+const CACHE_NAME = "scoreboard-controller-v15";
 const APP_SHELL = [
   "./controller.html",
   "./controller.css",
@@ -37,15 +37,19 @@ self.addEventListener("fetch", (event) => {
   if (reqUrl.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
-          return response;
-        })
-        .catch(() => caches.match("./controller.html"));
-    })
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      try {
+        const response = await fetch(event.request);
+        if (response && response.ok) {
+          await cache.put(event.request, response.clone());
+        }
+        return response;
+      } catch (_) {
+        const cached = await cache.match(event.request);
+        if (cached) return cached;
+        return cache.match("./controller.html");
+      }
+    })()
   );
 });

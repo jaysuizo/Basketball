@@ -1,0 +1,44 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".git/**",
+      "**/.*",
+      "**/node_modules/**",
+      "android/**",
+      "apk-web/**",
+      "*.md",
+      "*.ps1",
+      "package.json",
+      "package-lock.json"
+    ],
+    "cleanUrls": false,
+    "rewrites": [
+      {
+        "source": "/controller",
+        "destination": "/controller.html"
+      },
+      {
+        "source": "/controller-new",
+        "destination": "/controller.html"
+      },
+      {
+        "source": "/scoreboard",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/service-worker-controller.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ]
+  }
+}

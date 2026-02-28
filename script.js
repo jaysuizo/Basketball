@@ -158,7 +158,15 @@ function triggerAnimation(element, animationClass, duration = 600) {
 // ========================================
 
 const MAX_FOULS = 5;
-const MAX_TIMEOUTS = 3;
+const DEFAULT_MAX_PERIOD = 4;
+
+function getTimeoutAllowance(period, maxPeriod = DEFAULT_MAX_PERIOD) {
+  const safePeriod = Math.max(1, Number(period) || 1);
+  const safeMaxPeriod = Math.max(1, Number(maxPeriod) || DEFAULT_MAX_PERIOD);
+  if (safePeriod > safeMaxPeriod) return 1;
+  if (safePeriod === safeMaxPeriod) return 2;
+  return 1;
+}
 
 function formatFoulsDisplay(value) {
   const safe = Math.max(0, Number(value ?? 0));
@@ -193,11 +201,12 @@ function updateFoulDots(homeFouls, awayFouls) {
   }
 }
 
-function updateTimeoutDots(homeTimeouts, awayTimeouts) {
-  const safeHomeTimeouts = Math.min(MAX_TIMEOUTS, Math.max(0, Number(homeTimeouts ?? 0)));
-  const safeAwayTimeouts = Math.min(MAX_TIMEOUTS, Math.max(0, Number(awayTimeouts ?? 0)));
-  renderDots(elements.homeTimeoutDots, safeHomeTimeouts, MAX_TIMEOUTS, "dot-timeout");
-  renderDots(elements.awayTimeoutDots, safeAwayTimeouts, MAX_TIMEOUTS, "dot-timeout");
+function updateTimeoutDots(homeTimeouts, awayTimeouts, timeoutLimit) {
+  const safeLimit = Math.max(1, Number(timeoutLimit) || 1);
+  const safeHomeTimeouts = Math.min(safeLimit, Math.max(0, Number(homeTimeouts ?? 0)));
+  const safeAwayTimeouts = Math.min(safeLimit, Math.max(0, Number(awayTimeouts ?? 0)));
+  renderDots(elements.homeTimeoutDots, safeHomeTimeouts, safeLimit, "dot-timeout");
+  renderDots(elements.awayTimeoutDots, safeAwayTimeouts, safeLimit, "dot-timeout");
 }
 
 // ========================================
@@ -378,8 +387,11 @@ onValue(scoreboardRef, (snapshot) => {
 
   const homeFouls = Math.max(0, Number(data.homeFouls ?? 0));
   const awayFouls = Math.max(0, Number(data.awayFouls ?? 0));
-  const homeTimeouts = Math.min(MAX_TIMEOUTS, Math.max(0, Number(data.homeTimeouts ?? 0)));
-  const awayTimeouts = Math.min(MAX_TIMEOUTS, Math.max(0, Number(data.awayTimeouts ?? 0)));
+  const period = Math.max(1, Number(data.period ?? 1));
+  const maxPeriod = Math.max(1, Number(data.maxPeriod ?? DEFAULT_MAX_PERIOD));
+  const timeoutLimit = getTimeoutAllowance(period, maxPeriod);
+  const homeTimeouts = Math.min(timeoutLimit, Math.max(0, Number(data.homeTimeouts ?? 0)));
+  const awayTimeouts = Math.min(timeoutLimit, Math.max(0, Number(data.awayTimeouts ?? 0)));
 
   // Static values
   elements.homeScore.textContent = data.homeScore ?? 0;
@@ -393,7 +405,7 @@ onValue(scoreboardRef, (snapshot) => {
 
   // Dot indicators
   updateFoulDots(homeFouls, awayFouls);
-  updateTimeoutDots(homeTimeouts, awayTimeouts);
+  updateTimeoutDots(homeTimeouts, awayTimeouts, timeoutLimit);
 
   // Period / OT
   updatePeriodDisplay(data);

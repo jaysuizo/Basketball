@@ -4,7 +4,12 @@
   "description": "This project displays a basketball scoreboard using data stored in **Firebase**.   The UI shows home/away scores, fouls, timeouts, game clock, shot clock, and possession.   Data is synchronized in real-time from Firebase, so updates in the database reflect immediately on the scoreboard.   **The scoreboard automatically listens for changes, so the UI updates instantly when the game data changes.**",
   "main": "controller.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "firebase": "node ./node_modules/firebase-tools/lib/bin/firebase.js",
+    "hosting:login": "npm run firebase -- login",
+    "hosting:use": "npm run firebase -- use --add",
+    "hosting:serve": "npm run firebase -- emulators:start --only hosting",
+    "hosting:deploy": "npm run firebase -- deploy --only hosting"
   },
   "repository": {
     "type": "git",
@@ -22,5 +27,8 @@
     "@capacitor/android": "^8.1.0",
     "@capacitor/cli": "^8.1.0",
     "@capacitor/core": "^8.1.0"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.8.0"
   }
 }

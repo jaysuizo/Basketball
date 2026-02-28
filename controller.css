@@ -1,237 +1,1385 @@
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
 body.controller-mode {
+  margin: 0;
+  min-height: 100vh;
   min-height: 100dvh;
-  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right))
-    max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
   overflow: hidden;
+  color: #edf1ff;
+  font-family: "Rajdhani", sans-serif;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(18, 22, 45, 0.9) 0%, rgba(7, 9, 19, 0.98) 65%, #02030a 100%),
+    #04060f;
+}
+
+body.controller-mode::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 28px,
+      rgba(139, 149, 196, 0.03) 28px,
+      rgba(139, 149, 196, 0.03) 56px
+    );
+  pointer-events: none;
+  z-index: 0;
 }
 
 .controller-mode .scoreboard-container {
-  max-width: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1536px;
+  height: 864px;
+  padding: 22px 22px 20px;
+  border-radius: 30px;
+  border: 2px solid rgba(136, 144, 186, 0.34);
+  background:
+    linear-gradient(180deg, rgba(22, 24, 41, 0.92) 0%, rgba(11, 13, 27, 0.96) 100%),
+    radial-gradient(circle at 50% -15%, rgba(255, 76, 109, 0.2), transparent 48%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 26px 60px rgba(0, 0, 0, 0.55),
+    0 0 34px rgba(87, 101, 163, 0.2);
+  transform-origin: top left;
+  will-change: transform;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.landscape-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  align-items: center;
+  justify-content: center;
+  padding: calc(24px + var(--safe-top)) calc(24px + var(--safe-right))
+    calc(24px + var(--safe-bottom)) calc(24px + var(--safe-left));
+  background:
+    radial-gradient(circle at 50% 30%, rgba(35, 40, 70, 0.94) 0%, rgba(8, 10, 20, 0.98) 70%),
+    #050710;
+}
+
+.landscape-overlay-card {
+  width: min(520px, 100%);
+  border-radius: 22px;
+  border: 2px solid rgba(145, 154, 206, 0.46);
+  background: linear-gradient(180deg, rgba(26, 30, 49, 0.95), rgba(17, 20, 37, 0.98));
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+  padding: 26px 22px;
+  text-align: center;
+}
+
+.landscape-overlay-title {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 44px;
+  letter-spacing: 3px;
+  color: #f1f4ff;
+}
+
+.landscape-overlay-text {
+  margin-top: 8px;
+  font-size: 24px;
+  line-height: 1.3;
+  color: rgba(229, 233, 255, 0.84);
+}
+
+body.controller-mode.portrait-blocked .landscape-overlay {
+  display: flex;
+}
+
+body.controller-mode.portrait-blocked .scoreboard-container,
+body.controller-mode.portrait-blocked .fullscreen-btn {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* CSS fallback: keep landscape-only behavior before JS updates classes */
+@media (orientation: portrait) {
+  body.controller-mode .landscape-overlay {
+    display: flex;
+  }
+
+  body.controller-mode .scoreboard-container,
+  body.controller-mode .fullscreen-btn {
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.controller-mode .scoreboard-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(46, 225, 161, 0.2), rgba(255, 70, 108, 0.24), rgba(75, 127, 255, 0.2));
+  mask: linear-gradient(#000 0 0) top / 100% 2px no-repeat;
+}
+
+.controller-frame {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.top-bar {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 220px 1fr 220px;
+  align-items: center;
+  gap: 12px;
+}
+
+.top-spacer {
   width: 100%;
-  height: calc(100dvh - 24px);
+}
+
+.reset-all {
+  position: static;
+  justify-self: start;
+  min-width: 200px;
+  height: 54px;
+  border-radius: 18px;
+  border: 2px solid rgba(170, 178, 214, 0.36);
+  background: linear-gradient(180deg, rgba(52, 56, 83, 0.78), rgba(35, 38, 60, 0.86));
+  color: #f2f4ff;
+  font-size: 34px;
+  letter-spacing: 0.6px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.quarter-display {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quarter-title {
+  font-family: "Bebas Neue", sans-serif;
+  letter-spacing: 5px;
+  font-size: 44px;
+  color: rgba(223, 227, 255, 0.5);
+}
+
+.ctrl-select {
+  width: 92px;
+  height: 46px;
+  border-radius: 13px;
+  border: 2px solid rgba(151, 160, 200, 0.45);
+  background: rgba(28, 31, 50, 0.92);
+  color: #f1f4ff;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  padding: 0 8px;
+  appearance: auto;
 }
 
 .controller-mode .scoreboard {
   height: 100%;
-}
-
-.controller-mode .scoreboard {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: 16px;
   animation: none;
 }
 
-.fullscreen-btn {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  z-index: 1000;
+.team-section,
+.center-section {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 20px;
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(20, 23, 39, 0.95), rgba(14, 16, 31, 0.98)),
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.06), transparent 45%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 28px rgba(0, 0, 0, 0.35);
 }
 
-.ctrl-input,
-.ctrl-select {
-  width: 100%;
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--text-muted);
-  border-radius: 10px;
-  padding: 8px 10px;
-  font-family: "Rajdhani", sans-serif;
-  font-size: 16px;
-  margin-bottom: 12px;
+.home-team {
+  border: 2px solid rgba(42, 217, 158, 0.64);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 26px rgba(0, 0, 0, 0.34),
+    0 0 18px rgba(24, 220, 159, 0.16);
 }
 
-.ctrl-select {
-  width: 84px;
-  margin: 0 auto;
+.away-team {
+  border: 2px solid rgba(72, 124, 255, 0.66);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 26px rgba(0, 0, 0, 0.34),
+    0 0 18px rgba(72, 124, 255, 0.16);
+}
+
+.center-section {
+  border: 2px solid rgba(255, 68, 104, 0.74);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 16px 30px rgba(0, 0, 0, 0.36),
+    0 0 22px rgba(255, 68, 104, 0.18);
+  align-items: center;
+}
+
+.team-label {
+  font-family: "Bebas Neue", sans-serif;
   text-align: center;
-  font-size: 14px;
-  padding: 6px 8px;
+  letter-spacing: 4px;
+  font-size: 50px;
+  color: #ecf0ff;
+}
+
+.ctrl-input {
+  width: 100%;
+  height: 34px;
+  margin: 2px 0 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(138, 150, 204, 0.44);
+  background: rgba(19, 22, 38, 0.9);
+  color: #e4e9ff;
+  text-align: center;
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0 10px;
 }
 
 .score-control {
+  margin-top: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 18px;
+}
+
+.score-control button {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  font-size: 56px;
+  line-height: 1;
+  border-width: 2px;
+  box-shadow: 0 10px 18px rgba(0, 0, 0, 0.36);
+}
+
+#homeScoreMinus {
+  border-color: rgba(66, 226, 170, 0.68);
+  background: linear-gradient(180deg, rgba(35, 118, 95, 0.95), rgba(20, 80, 69, 0.94));
+  color: #cbffed;
+}
+
+#awayScoreMinus {
+  border-color: rgba(67, 116, 255, 0.7);
+  background: linear-gradient(180deg, rgba(42, 72, 160, 0.95), rgba(28, 53, 126, 0.94));
+  color: #d5e2ff;
+}
+
+#homeScorePlus,
+#awayScorePlus {
+  display: none;
+}
+
+.score-display {
+  margin: 0;
+  line-height: 0.9;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 156px;
+  letter-spacing: 1px;
+  color: #f2f5ff;
+  text-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+}
+
+.team-stats {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(147, 158, 205, 0.2);
+}
+
+.stat-item {
+  padding: 13px 0;
+  border-bottom: 1px solid rgba(147, 158, 205, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-item:last-child {
+  border-bottom: 0;
+}
+
+.stat-label {
+  font-size: 32px;
+  letter-spacing: 3px;
+  color: rgba(221, 226, 255, 0.62);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.mini-control {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 46px;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-value {
+  text-align: center;
+  font-family: "Bebas Neue", sans-serif;
+  line-height: 0.9;
+  font-size: 74px;
+  color: #f4f7ff;
+}
+
+.mini-control button {
+  height: 38px;
+  border-radius: 10px;
+  border-width: 2px;
+  font-size: 40px;
+  line-height: 1;
+}
+
+.home-team .mini-control button:first-child,
+.away-team .mini-control button:first-child {
+  border-color: rgba(255, 83, 116, 0.72);
+  background: linear-gradient(180deg, rgba(146, 33, 58, 0.96), rgba(96, 22, 40, 0.94));
+  color: #ffd4de;
+}
+
+.home-team .mini-control button:last-child {
+  border-color: rgba(63, 231, 173, 0.72);
+  background: linear-gradient(180deg, rgba(35, 121, 97, 0.96), rgba(18, 78, 67, 0.94));
+  color: #d6fff0;
+}
+
+.away-team .mini-control button:last-child {
+  border-color: rgba(72, 127, 255, 0.72);
+  background: linear-gradient(180deg, rgba(43, 76, 173, 0.96), rgba(27, 52, 129, 0.94));
+  color: #d8e5ff;
 }
 
 .score-add-row {
   margin-top: 10px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
+  background: transparent;
 }
 
-.home-quick-controls {
-  margin-top: 10px;
-  display: grid;
-  gap: 8px;
-}
-
-.home-time-quick-row {
-  display: grid;
-  grid-template-columns: 44px auto 44px;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-}
-
-#homeApplyTimeBtn {
-  width: auto;
-  padding: 6px 10px;
-  font-size: 13px;
+.score-add-row button {
+  height: 70px;
+  border: 1px solid rgba(126, 138, 193, 0.42);
+  border-radius: 12px;
+  font-size: 50px;
   line-height: 1;
+  background: rgba(23, 26, 44, 0.9);
+  color: #f0f3ff;
 }
 
-#homeAdd1,
+#homeAdd1 {
+  color: #cdffea;
+  background: linear-gradient(90deg, rgba(27, 104, 82, 0.95), rgba(20, 74, 63, 0.95));
+}
+
 #awayAdd1 {
-  border-color: rgba(34, 197, 94, 0.7);
-  color: #86efac;
+  color: #cdffea;
+  background: linear-gradient(90deg, rgba(27, 104, 82, 0.95), rgba(20, 74, 63, 0.95));
 }
 
 #homeAdd2,
 #awayAdd2 {
-  border-color: rgba(245, 158, 11, 0.75);
-  color: #fcd34d;
+  color: #deebff;
+  background: linear-gradient(90deg, rgba(41, 78, 171, 0.95), rgba(30, 58, 136, 0.95));
 }
 
 #homeAdd3,
 #awayAdd3 {
-  border-color: rgba(59, 130, 246, 0.75);
-  color: #93c5fd;
+  color: #ffe8ee;
+  background: linear-gradient(90deg, rgba(170, 74, 98, 0.95), rgba(132, 58, 81, 0.95));
 }
 
-.mini-control {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.possession-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-  width: 100%;
-}
-
-.possession-row button {
-  font-size: 22px;
-  line-height: 1;
-  padding: 8px 10px;
-}
-
-.possession-row button.active-home {
-  border-color: color-mix(in srgb, var(--accent-primary) 70%, transparent);
-  color: #ffd2c1;
-}
-
-.possession-row button.active-none {
-  border-color: color-mix(in srgb, var(--text-muted) 70%, transparent);
-  color: var(--text-secondary);
-}
-
-.possession-row button.active-away {
-  border-color: color-mix(in srgb, var(--possession-color) 70%, transparent);
-  color: #c6f5ff;
-}
-
-.control-grid {
-  width: 100%;
-  margin-top: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.row-main,
-.row-shot {
-  width: 100%;
-  display: grid;
-  gap: 8px;
-  align-items: center;
-}
-
-.row-main {
-  grid-template-columns: 1fr;
-}
-
-.row-main #gameToggleBtn {
-  justify-self: center;
-  min-width: 220px;
-}
-
-.row-main #resetGameBtn {
-  justify-self: center;
-  width: 170px;
-}
-
-.row-shot {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.away-shot-row {
+.home-quick-controls {
   margin-top: 10px;
 }
 
-#endGameBtn.danger {
-  background: color-mix(in srgb, var(--color-paused) 20%, var(--bg-tertiary));
-  border-color: color-mix(in srgb, var(--color-paused) 75%, transparent);
-  color: #ffd5de;
+.home-time-quick-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  gap: 6px;
+  padding: 6px;
+  border: 2px solid rgba(63, 231, 173, 0.56);
+  border-radius: 12px;
+  overflow: visible;
+  background: linear-gradient(90deg, rgba(24, 83, 66, 0.94), rgba(18, 60, 57, 0.96));
 }
 
-.controller-mode button {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--text-muted);
+.home-time-quick-row button {
+  height: 46px;
+  border: 1px solid rgba(99, 214, 174, 0.4);
   border-radius: 10px;
-  padding: 9px 10px;
-  font-family: "Rajdhani", sans-serif;
+  background: rgba(15, 52, 43, 0.7);
+  color: #d8fff1;
+}
+
+.center-time-controls {
+  width: min(340px, 100%);
+  margin-top: 18px;
+  margin-bottom: 16px;
+}
+
+#homeTimeMinusBtn,
+#homeTimePlusBtn {
+  font-size: 40px;
+  line-height: 1;
+}
+
+#homeApplyTimeBtn {
+  font-size: 32px;
+  letter-spacing: 1.5px;
+}
+
+.clock-heading {
+  margin-top: 4px;
+  font-size: 34px;
+  letter-spacing: 3px;
+  color: rgba(230, 234, 255, 0.56);
+  text-transform: uppercase;
+}
+
+.clock-display {
+  margin: 6px 0 10px;
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 170px;
+  line-height: 0.9;
+  letter-spacing: 2px;
+  color: #ff4062;
+  text-shadow:
+    0 0 20px rgba(255, 73, 112, 0.42),
+    0 0 46px rgba(255, 73, 112, 0.24);
+}
+
+.clock-actions {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 2px;
+}
+
+.status-display {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 2px solid rgba(255, 64, 98, 0.72);
+  background: linear-gradient(180deg, rgba(139, 30, 58, 0.96), rgba(100, 22, 41, 0.94));
+  color: #ffd3df;
+  font-size: 40px;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
 }
 
-.controller-mode button:hover {
-  filter: brightness(1.1);
+#gameToggleBtn {
+  height: 48px;
+  border-radius: 16px;
+  border: 2px solid rgba(63, 231, 173, 0.72);
+  background: linear-gradient(180deg, rgba(40, 132, 104, 0.96), rgba(22, 84, 71, 0.94));
+  color: #d5fff0;
+  font-size: 38px;
+  letter-spacing: 2px;
 }
 
-.controller-mode button.primary {
-  border-color: color-mix(in srgb, var(--color-live) 45%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--color-live) 30%, transparent);
+.quarter-nav {
+  width: min(520px, 100%);
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr) 68px;
+  border: 2px solid rgba(126, 138, 193, 0.42);
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(25, 28, 47, 0.92);
 }
 
-.controller-mode button.danger {
-  border-color: color-mix(in srgb, var(--color-paused) 55%, transparent);
+.quarter-nav button {
+  height: 52px;
+  border: 0;
+  border-right: 1px solid rgba(128, 139, 190, 0.34);
+  border-radius: 0;
+  background: transparent;
+  color: #f0f3ff;
+}
+
+.quarter-nav button:last-child {
+  border-right: 0;
+}
+
+#posHomeBtn,
+#posAwayBtn {
+  font-size: 36px;
+  line-height: 1;
+}
+
+#posNoneBtn {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 46px;
+  letter-spacing: 2px;
+}
+
+.shot-heading {
+  margin-top: 12px;
+  font-size: 34px;
+  letter-spacing: 3px;
+  color: rgba(230, 234, 255, 0.56);
+  text-transform: uppercase;
+}
+
+.shot-clock-container {
+  width: min(340px, 100%);
+  margin-top: 8px;
+  height: 72px;
+  border-radius: 16px;
+  border: 2px solid rgba(126, 138, 193, 0.38);
+  background: rgba(24, 27, 45, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.shot-label {
+  display: none;
+}
+
+.shot-value {
+  font-family: "Bebas Neue", sans-serif;
+  font-size: 86px;
+  line-height: 1;
+  color: #ffd06b;
+  text-shadow: 0 0 18px rgba(255, 208, 107, 0.24);
 }
 
 .control-state {
-  font-size: 14px;
+  margin-top: 10px;
+  font-size: 24px;
   letter-spacing: 1px;
-  color: var(--text-secondary);
+  text-transform: uppercase;
+  color: #22c55e;
 }
 
-.reset-all {
+.control-grid {
+  margin-top: auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.row-main {
+  width: auto;
+}
+
+#resetGameBtn {
+  height: 38px;
+  min-width: 174px;
+  border-radius: 12px;
+  border: 2px solid rgba(136, 147, 198, 0.4);
+  background: rgba(27, 30, 49, 0.88);
+  color: #ebefff;
+  font-size: 22px;
+  letter-spacing: 0.8px;
+  opacity: 0.86;
+}
+
+.shot-presets-row {
+  width: min(340px, 100%);
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  background: transparent;
+}
+
+.shot-presets-row button {
+  height: 46px;
+  border-radius: 12px;
+  font-size: 28px;
+  letter-spacing: 0.8px;
+}
+
+.center-shot-row {
+  width: 100%;
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+#shotToggleBtn {
+  width: calc((100% - 14px) / 2);
+  height: 48px;
+  border-radius: 16px;
+  border: 2px solid rgba(63, 231, 173, 0.62);
+  background: linear-gradient(180deg, rgba(30, 110, 85, 0.94), rgba(20, 74, 63, 0.94));
+  color: #d8fff1;
+  font-size: 24px;
+  letter-spacing: 0.9px;
+  line-height: 1;
+}
+
+#shot14Btn,
+#shot24Btn {
+  border-color: rgba(63, 231, 173, 0.56);
+  background: linear-gradient(180deg, rgba(30, 110, 85, 0.9), rgba(20, 74, 63, 0.9));
+  color: #d8fff1;
+}
+
+.controller-mode button {
+  border: 1px solid rgba(120, 132, 190, 0.5);
+  background: rgba(30, 34, 55, 0.9);
+  color: #eef2ff;
+  border-radius: 12px;
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  cursor: pointer;
+  transition: transform 0.12s ease, filter 0.12s ease, border-color 0.2s ease;
+}
+
+.controller-mode button:hover {
+  filter: brightness(1.08);
+}
+
+.controller-mode button:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+.controller-mode button,
+.controller-mode input,
+.controller-mode select {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.fullscreen-btn {
   position: fixed;
-  left: 14px;
-  bottom: 14px;
+  right: calc(14px + var(--safe-right));
+  bottom: calc(14px + var(--safe-bottom));
   z-index: 20;
+  min-width: 170px;
+  height: 48px;
+  border-radius: 18px;
+  border: 2px solid rgba(170, 178, 214, 0.36);
+  background: linear-gradient(180deg, rgba(52, 56, 83, 0.78), rgba(35, 38, 60, 0.86));
+  color: #f3f5ff;
+  font-size: 32px;
+  letter-spacing: 0.5px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
 body.is-fullscreen .fullscreen-btn {
-  opacity: 0.75;
+  opacity: 0.74;
 }
 
-@media (max-width: 768px) {
-  .row-shot {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-
-  .home-time-quick-row {
-    grid-template-columns: 40px auto 40px;
-  }
+body.running .status-display {
+  border-color: rgba(63, 231, 173, 0.72);
+  background: linear-gradient(180deg, rgba(40, 132, 104, 0.96), rgba(22, 84, 71, 0.94));
+  color: #d5fff0;
 }
 
-@media (max-width: 480px) {
-  .row-shot {
-    grid-template-columns: 1fr;
+body.running #gameToggleBtn {
+  border-color: rgba(255, 64, 98, 0.72);
+  background: linear-gradient(180deg, rgba(139, 30, 58, 0.96), rgba(100, 22, 41, 0.94));
+  color: #ffd3df;
+}
+
+.quarter-nav button.active-home,
+.quarter-nav button.active-away,
+.quarter-nav button.active-none {
+  background: rgba(57, 62, 93, 0.54);
+}
+
+body.controller-mode.canvas-xl .top-bar {
+  min-height: 70px;
+}
+
+body.controller-mode.canvas-xl .quarter-title {
+  font-size: 48px;
+}
+
+body.controller-mode.canvas-xl .team-label {
+  font-size: 54px;
+}
+
+body.controller-mode.canvas-xl .score-display {
+  font-size: 168px;
+}
+
+body.controller-mode.canvas-xl .clock-display {
+  font-size: 182px;
+}
+
+body.controller-mode.canvas-xl .status-display,
+body.controller-mode.canvas-xl #gameToggleBtn {
+  font-size: 42px;
+}
+
+body.controller-mode.canvas-xl .shot-value {
+  font-size: 92px;
+}
+
+body.controller-mode.canvas-lg .top-bar {
+  min-height: 62px;
+}
+
+body.controller-mode.canvas-lg .quarter-title {
+  font-size: 42px;
+}
+
+body.controller-mode.canvas-lg .team-label {
+  font-size: 48px;
+}
+
+body.controller-mode.canvas-lg .score-display {
+  font-size: 148px;
+}
+
+body.controller-mode.canvas-lg .clock-display {
+  font-size: 162px;
+}
+
+body.controller-mode.canvas-lg .status-display,
+body.controller-mode.canvas-lg #gameToggleBtn {
+  font-size: 36px;
+}
+
+body.controller-mode.canvas-lg .shot-value {
+  font-size: 82px;
+}
+
+body.controller-mode.canvas-md .top-bar {
+  min-height: 58px;
+}
+
+body.controller-mode.canvas-md .reset-all {
+  min-width: 184px;
+  height: 50px;
+  font-size: 30px;
+}
+
+body.controller-mode.canvas-md .quarter-title {
+  font-size: 40px;
+}
+
+body.controller-mode.canvas-md .team-label {
+  font-size: 44px;
+}
+
+body.controller-mode.canvas-md .ctrl-input {
+  height: 32px;
+  font-size: 18px;
+}
+
+body.controller-mode.canvas-md .score-display {
+  font-size: 140px;
+}
+
+body.controller-mode.canvas-md .score-control button {
+  width: 64px;
+  height: 64px;
+  font-size: 48px;
+}
+
+body.controller-mode.canvas-md .stat-label {
+  font-size: 28px;
+}
+
+body.controller-mode.canvas-md .stat-value {
+  font-size: 64px;
+}
+
+body.controller-mode.canvas-md .clock-display {
+  font-size: 150px;
+}
+
+body.controller-mode.canvas-md .status-display,
+body.controller-mode.canvas-md #gameToggleBtn {
+  font-size: 34px;
+}
+
+body.controller-mode.canvas-md .shot-value {
+  font-size: 76px;
+}
+
+body.controller-mode.canvas-sm .top-bar {
+  min-height: 54px;
+}
+
+body.controller-mode.canvas-sm .reset-all {
+  min-width: 170px;
+  height: 46px;
+  font-size: 26px;
+}
+
+body.controller-mode.canvas-sm .quarter-title {
+  font-size: 34px;
+}
+
+body.controller-mode.canvas-sm .ctrl-select {
+  width: 80px;
+  height: 40px;
+  font-size: 20px;
+}
+
+body.controller-mode.canvas-sm .team-label {
+  font-size: 40px;
+}
+
+body.controller-mode.canvas-sm .ctrl-input {
+  height: 30px;
+  font-size: 16px;
+}
+
+body.controller-mode.canvas-sm .score-display {
+  font-size: 128px;
+}
+
+body.controller-mode.canvas-sm .score-control button {
+  width: 58px;
+  height: 58px;
+  font-size: 42px;
+}
+
+body.controller-mode.canvas-sm .stat-label {
+  font-size: 24px;
+}
+
+body.controller-mode.canvas-sm .stat-value {
+  font-size: 58px;
+}
+
+body.controller-mode.canvas-sm .mini-control button {
+  height: 34px;
+  font-size: 32px;
+}
+
+body.controller-mode.canvas-sm .score-add-row button {
+  height: 62px;
+  font-size: 42px;
+}
+
+body.controller-mode.canvas-sm #homeApplyTimeBtn {
+  font-size: 26px;
+}
+
+body.controller-mode.canvas-sm #homeTimeMinusBtn,
+body.controller-mode.canvas-sm #homeTimePlusBtn {
+  font-size: 34px;
+}
+
+body.controller-mode.canvas-sm .clock-heading,
+body.controller-mode.canvas-sm .shot-heading {
+  font-size: 28px;
+}
+
+body.controller-mode.canvas-sm .clock-display {
+  font-size: 136px;
+}
+
+body.controller-mode.canvas-sm .status-display,
+body.controller-mode.canvas-sm #gameToggleBtn {
+  height: 46px;
+  font-size: 30px;
+}
+
+body.controller-mode.canvas-sm #posHomeBtn,
+body.controller-mode.canvas-sm #posAwayBtn {
+  font-size: 30px;
+}
+
+body.controller-mode.canvas-sm #posNoneBtn {
+  font-size: 38px;
+}
+
+body.controller-mode.canvas-sm .shot-clock-container {
+  height: 60px;
+}
+
+body.controller-mode.canvas-sm .shot-value {
+  font-size: 70px;
+}
+
+body.controller-mode.canvas-sm .center-shot-row {
+  margin-top: 8px;
+}
+
+body.controller-mode.canvas-sm #shotToggleBtn {
+  height: 46px;
+  font-size: 20px;
+}
+
+body.controller-mode.canvas-sm .shot-presets-row button {
+  height: 40px;
+  font-size: 22px;
+}
+
+body.controller-mode.canvas-sm .control-state {
+  font-size: 18px;
+}
+
+body.controller-mode.canvas-sm #resetGameBtn {
+  height: 34px;
+  min-width: 140px;
+  font-size: 20px;
+}
+
+body.controller-mode.tiny-device .scoreboard-container {
+  border-radius: 24px;
+  padding: 16px;
+}
+
+body.controller-mode.tiny-device .top-bar {
+  min-height: 56px;
+}
+
+body.controller-mode.tiny-device .reset-all,
+body.controller-mode.tiny-device .fullscreen-btn {
+  min-width: 132px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 28px;
+}
+
+body.controller-mode.tiny-device .quarter-title {
+  font-size: 36px;
+}
+
+body.controller-mode.tiny-device .ctrl-select {
+  width: 72px;
+  height: 36px;
+  font-size: 24px;
+}
+
+body.controller-mode.tiny-device .team-label {
+  font-size: 40px;
+}
+
+body.controller-mode.tiny-device .ctrl-input {
+  height: 28px;
+  font-size: 15px;
+}
+
+body.controller-mode.tiny-device .score-display {
+  font-size: 128px;
+}
+
+body.controller-mode.tiny-device .score-control button {
+  width: 58px;
+  height: 58px;
+  font-size: 44px;
+}
+
+body.controller-mode.tiny-device .stat-label {
+  font-size: 30px;
+}
+
+body.controller-mode.tiny-device .stat-value {
+  font-size: 64px;
+}
+
+body.controller-mode.tiny-device .mini-control button {
+  height: 36px;
+  font-size: 36px;
+}
+
+body.controller-mode.tiny-device .score-add-row button {
+  height: 64px;
+  font-size: 44px;
+}
+
+body.controller-mode.tiny-device .score-add-row,
+body.controller-mode.tiny-device .shot-presets-row {
+  gap: 6px;
+}
+
+body.controller-mode.tiny-device #homeApplyTimeBtn {
+  font-size: 28px;
+}
+
+body.controller-mode.tiny-device #homeTimeMinusBtn,
+body.controller-mode.tiny-device #homeTimePlusBtn {
+  font-size: 34px;
+}
+
+body.controller-mode.tiny-device .clock-heading,
+body.controller-mode.tiny-device .shot-heading {
+  font-size: 30px;
+}
+
+body.controller-mode.tiny-device .clock-display {
+  font-size: 140px;
+}
+
+body.controller-mode.tiny-device .status-display,
+body.controller-mode.tiny-device #gameToggleBtn {
+  height: 44px;
+  font-size: 34px;
+}
+
+body.controller-mode.tiny-device #posHomeBtn,
+body.controller-mode.tiny-device #posAwayBtn {
+  font-size: 32px;
+}
+
+body.controller-mode.tiny-device #posNoneBtn {
+  font-size: 42px;
+}
+
+body.controller-mode.tiny-device .shot-clock-container {
+  height: 62px;
+}
+
+body.controller-mode.tiny-device .shot-value {
+  font-size: 74px;
+}
+
+body.controller-mode.tiny-device .control-state {
+  font-size: 20px;
+}
+
+body.controller-mode.tiny-device #resetGameBtn {
+  height: 34px;
+  min-width: 128px;
+  font-size: 22px;
+}
+
+body.controller-mode.tiny-device .shot-presets-row button {
+  height: 42px;
+  font-size: 24px;
+}
+
+body.controller-mode.tiny-device .center-shot-row {
+  margin-top: 8px;
+}
+
+body.controller-mode.tiny-device #shotToggleBtn {
+  height: 44px;
+  font-size: 20px;
+}
+
+/* Extra-small landscape profile for Android phones */
+body.controller-mode.canvas-xs .top-bar {
+  min-height: 50px;
+}
+
+body.controller-mode.canvas-xs .reset-all {
+  min-width: 150px;
+  height: 42px;
+  font-size: 24px;
+}
+
+body.controller-mode.canvas-xs .quarter-title {
+  font-size: 30px;
+}
+
+body.controller-mode.canvas-xs .ctrl-select {
+  width: 74px;
+  height: 36px;
+  font-size: 18px;
+}
+
+body.controller-mode.canvas-xs .team-label {
+  font-size: 34px;
+}
+
+body.controller-mode.canvas-xs .ctrl-input {
+  height: 28px;
+  font-size: 14px;
+}
+
+body.controller-mode.canvas-xs .score-display {
+  font-size: 110px;
+}
+
+body.controller-mode.canvas-xs .score-control button {
+  width: 52px;
+  height: 52px;
+  font-size: 38px;
+}
+
+body.controller-mode.canvas-xs .stat-label {
+  font-size: 20px;
+}
+
+body.controller-mode.canvas-xs .stat-value {
+  font-size: 50px;
+}
+
+body.controller-mode.canvas-xs .mini-control button {
+  height: 30px;
+  font-size: 28px;
+}
+
+body.controller-mode.canvas-xs .score-add-row button {
+  height: 54px;
+  font-size: 36px;
+}
+
+body.controller-mode.canvas-xs #homeApplyTimeBtn {
+  font-size: 22px;
+}
+
+body.controller-mode.canvas-xs #homeTimeMinusBtn,
+body.controller-mode.canvas-xs #homeTimePlusBtn {
+  font-size: 30px;
+}
+
+body.controller-mode.canvas-xs .clock-heading,
+body.controller-mode.canvas-xs .shot-heading {
+  font-size: 24px;
+}
+
+body.controller-mode.canvas-xs .clock-display {
+  font-size: 118px;
+}
+
+body.controller-mode.canvas-xs .status-display,
+body.controller-mode.canvas-xs #gameToggleBtn {
+  height: 40px;
+  font-size: 26px;
+}
+
+body.controller-mode.canvas-xs #posHomeBtn,
+body.controller-mode.canvas-xs #posAwayBtn {
+  font-size: 26px;
+}
+
+body.controller-mode.canvas-xs #posNoneBtn {
+  font-size: 32px;
+}
+
+body.controller-mode.canvas-xs .shot-clock-container {
+  height: 54px;
+}
+
+body.controller-mode.canvas-xs .shot-value {
+  font-size: 62px;
+}
+
+body.controller-mode.canvas-xs .center-shot-row {
+  margin-top: 8px;
+}
+
+body.controller-mode.canvas-xs #shotToggleBtn {
+  height: 40px;
+  font-size: 18px;
+}
+
+body.controller-mode.canvas-xs .shot-presets-row button {
+  height: 36px;
+  font-size: 18px;
+}
+
+body.controller-mode.canvas-xs .control-state {
+  font-size: 16px;
+}
+
+body.controller-mode.canvas-xs .fullscreen-btn {
+  min-width: 140px;
+  height: 42px;
+  font-size: 24px;
+}
+
+/* Tiny-device overrides (small-height landscape phones) */
+body.controller-mode.tiny-device .scoreboard-container {
+  border-radius: 18px;
+  padding: 12px;
+}
+
+body.controller-mode.tiny-device .top-bar {
+  min-height: 46px;
+}
+
+body.controller-mode.tiny-device .reset-all,
+body.controller-mode.tiny-device .fullscreen-btn {
+  min-width: 124px;
+  height: 36px;
+  border-radius: 10px;
+  font-size: 20px;
+}
+
+body.controller-mode.tiny-device .quarter-title {
+  font-size: 26px;
+}
+
+body.controller-mode.tiny-device .ctrl-select {
+  width: 64px;
+  height: 32px;
+  font-size: 16px;
+}
+
+body.controller-mode.tiny-device .team-label {
+  font-size: 28px;
+}
+
+body.controller-mode.tiny-device .ctrl-input {
+  height: 24px;
+  font-size: 12px;
+}
+
+body.controller-mode.tiny-device .score-display {
+  font-size: 92px;
+}
+
+body.controller-mode.tiny-device .score-control {
+  gap: 10px;
+}
+
+body.controller-mode.tiny-device .score-control button {
+  width: 44px;
+  height: 44px;
+  font-size: 32px;
+  border-radius: 10px;
+}
+
+body.controller-mode.tiny-device .team-stats {
+  margin-top: 4px;
+}
+
+body.controller-mode.tiny-device .stat-item {
+  padding: 8px 0;
+  gap: 4px;
+}
+
+body.controller-mode.tiny-device .stat-label {
+  font-size: 16px;
+}
+
+body.controller-mode.tiny-device .stat-value {
+  font-size: 40px;
+}
+
+body.controller-mode.tiny-device .mini-control {
+  grid-template-columns: 34px minmax(0, 1fr) 34px;
+  gap: 6px;
+}
+
+body.controller-mode.tiny-device .mini-control button {
+  height: 26px;
+  font-size: 22px;
+}
+
+body.controller-mode.tiny-device .score-add-row button {
+  height: 44px;
+  font-size: 30px;
+}
+
+body.controller-mode.tiny-device .score-add-row,
+body.controller-mode.tiny-device .shot-presets-row {
+  gap: 5px;
+}
+
+body.controller-mode.tiny-device #homeApplyTimeBtn {
+  font-size: 18px;
+}
+
+body.controller-mode.tiny-device #homeTimeMinusBtn,
+body.controller-mode.tiny-device #homeTimePlusBtn {
+  font-size: 26px;
+}
+
+body.controller-mode.tiny-device .center-time-controls {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+body.controller-mode.tiny-device .clock-heading,
+body.controller-mode.tiny-device .shot-heading {
+  font-size: 20px;
+}
+
+body.controller-mode.tiny-device .clock-display {
+  font-size: 96px;
+  margin: 4px 0 8px;
+}
+
+body.controller-mode.tiny-device .status-display,
+body.controller-mode.tiny-device #gameToggleBtn {
+  height: 36px;
+  font-size: 22px;
+}
+
+body.controller-mode.tiny-device .quarter-nav {
+  margin-top: 8px;
+}
+
+body.controller-mode.tiny-device #posHomeBtn,
+body.controller-mode.tiny-device #posAwayBtn {
+  font-size: 24px;
+}
+
+body.controller-mode.tiny-device #posNoneBtn {
+  font-size: 28px;
+}
+
+body.controller-mode.tiny-device .shot-clock-container {
+  margin-top: 6px;
+  height: 48px;
+}
+
+body.controller-mode.tiny-device .shot-value {
+  font-size: 54px;
+}
+
+body.controller-mode.tiny-device .control-state {
+  margin-top: 6px;
+  font-size: 14px;
+}
+
+body.controller-mode.tiny-device .shot-presets-row button {
+  height: 32px;
+  font-size: 16px;
+}
+
+body.controller-mode.tiny-device .center-shot-row {
+  margin-top: 6px;
+}
+
+body.controller-mode.tiny-device #shotToggleBtn {
+  height: 36px;
+  font-size: 16px;
+}
+
+@media (max-width: 900px) and (orientation: portrait) {
+  .landscape-overlay-card {
+    border-radius: 16px;
+    padding: 20px 16px;
+  }
+
+  .landscape-overlay-title {
+    font-size: 34px;
+    letter-spacing: 2px;
+  }
+
+  .landscape-overlay-text {
+    font-size: 18px;
   }
 }

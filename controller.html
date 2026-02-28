@@ -15,137 +15,149 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="controller.css" />
+  <link rel="stylesheet" href="styles.css?v=20260228-5" />
+  <link rel="stylesheet" href="controller.css?v=20260228-5" />
 </head>
 <body class="theme-dark paused controller-mode">
-  <button id="fullscreenBtn" class="fullscreen-btn" type="button">Full Screen</button>
   <div class="scoreboard-container">
-    <div class="scoreboard">
-      <div class="team-section home-team">
-        <div class="team-label">HOME</div>
-        <input id="homeName" class="ctrl-input" type="text" maxlength="24" placeholder="Home Team" />
-
-        <div class="score-control">
-          <button id="homeScoreMinus">-</button>
-          <div class="score-display" id="homeScore">0</div>
-          <button id="homeScorePlus">+</button>
+    <div class="controller-frame">
+      <div class="top-bar">
+        <button id="resetAllBtn" class="reset-all" type="button">Reset All</button>
+        <div class="quarter-display">
+          <span class="quarter-title">QUARTER</span>
+          <select id="quarterSelect" class="ctrl-select" aria-label="Quarter">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
         </div>
-
-        <div class="team-stats">
-          <div class="stat-item">
-            <span class="stat-label">FOULS</span>
-            <div class="mini-control">
-              <button id="homeFoulMinus">-</button>
-              <span class="stat-value" id="homeFouls">0</span>
-              <button id="homeFoulPlus">+</button>
-            </div>
-          </div>
-          <div class="stat-item">
-            <span class="stat-label">TIMEOUTS</span>
-            <div class="mini-control">
-              <button id="homeTimeoutMinus">-</button>
-              <span class="stat-value" id="homeTimeouts">0</span>
-              <button id="homeTimeoutPlus">+</button>
-            </div>
-          </div>
-        </div>
-        <div class="score-add-row">
-          <button id="homeAdd1">1</button>
-          <button id="homeAdd2">2</button>
-          <button id="homeAdd3">3</button>
-        </div>
-        <div class="home-quick-controls">
-          <div class="home-time-quick-row">
-            <button id="homeTimeMinusBtn" type="button" aria-label="Set Time Minus">-</button>
-            <button id="homeApplyTimeBtn" type="button">Set Time</button>
-            <button id="homeTimePlusBtn" type="button" aria-label="Set Time Plus">+</button>
-          </div>
-        </div>
+        <div class="top-spacer" aria-hidden="true"></div>
       </div>
 
-      <div class="center-section">
-        <div class="game-info">
-          <div class="period-display">
-            <span class="period-label">QUARTER</span>
-            <select id="quarterSelect" class="ctrl-select">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-            </select>
+      <div class="scoreboard">
+        <div class="team-section home-team">
+          <div class="team-label">HOME</div>
+          <input id="homeName" class="ctrl-input" type="text" maxlength="24" placeholder="Home Team" />
+
+          <div class="score-control">
+            <button id="homeScoreMinus" aria-label="Home Score Minus">-</button>
+            <div class="score-display" id="homeScore">0</div>
+            <button id="homeScorePlus" aria-label="Home Score Plus">+</button>
           </div>
+
+          <div class="team-stats">
+            <div class="stat-item">
+              <span class="stat-label">FOULS</span>
+              <div class="mini-control">
+                <button id="homeFoulMinus">-</button>
+                <span class="stat-value" id="homeFouls">0</span>
+                <button id="homeFoulPlus">+</button>
+              </div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">TIMEOUTS</span>
+              <div class="mini-control">
+                <button id="homeTimeoutMinus">-</button>
+                <span class="stat-value" id="homeTimeouts">0</span>
+                <button id="homeTimeoutPlus">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="score-add-row">
+            <button id="homeAdd1">1</button>
+            <button id="homeAdd2">2</button>
+            <button id="homeAdd3">3</button>
+          </div>
+
         </div>
 
-        <div class="clock-display" id="timerText">10:00</div>
+        <div class="center-section">
+          <div class="clock-heading">GAME CLOCK</div>
+          <div class="clock-display" id="timerText">10:00</div>
 
-        <div class="secondary-info">
+          <div class="clock-actions">
+            <div class="status-display" id="statusText">PAUSED</div>
+            <button id="gameToggleBtn" class="primary">START</button>
+          </div>
+
+          <div class="possession-row quarter-nav">
+            <button id="posHomeBtn" type="button" aria-label="Home Ball">&#9664;</button>
+            <button id="posNoneBtn" type="button" aria-label="No Ball">QTR 1</button>
+            <button id="posAwayBtn" type="button" aria-label="Away Ball">&#9654;</button>
+          </div>
+
+          <div class="shot-heading">SHOT CLOCK</div>
           <div class="shot-clock-container">
-            <span class="shot-label">SHOT CLOCK</span>
             <span class="shot-value" id="shotClockText">24</span>
           </div>
-          <div class="possession-row">
-            <button id="posHomeBtn" type="button" aria-label="Home Ball">◀</button>
-            <button id="posNoneBtn" type="button" aria-label="No Ball">•</button>
-            <button id="posAwayBtn" type="button" aria-label="Away Ball">▶</button>
+          <div class="shot-presets-row">
+            <button id="shot14Btn">SHOT 14</button>
+            <button id="shot24Btn">SHOT 24</button>
           </div>
-          <div class="status-display" id="statusText">PAUSED</div>
+          <div class="center-shot-row">
+            <button id="shotToggleBtn">SHOT +- CLOCK 24</button>
+          </div>
+          <div class="center-time-controls">
+            <div class="home-time-quick-row">
+              <button id="homeTimeMinusBtn" type="button" aria-label="Set Time Minus">-</button>
+              <button id="homeApplyTimeBtn" type="button">SET TIME</button>
+              <button id="homeTimePlusBtn" type="button" aria-label="Set Time Plus">+</button>
+            </div>
+          </div>
+
           <div class="control-state" id="controlText">Control: checking...</div>
+
+          <div class="control-grid" aria-hidden="true"></div>
         </div>
 
-        <div class="control-grid">
-          <div class="row-main">
-            <button id="gameToggleBtn" class="primary">Play Game Clock</button>
+        <div class="team-section away-team">
+          <div class="team-label">AWAY</div>
+          <input id="awayName" class="ctrl-input" type="text" maxlength="24" placeholder="Away Team" />
+
+          <div class="score-control">
+            <button id="awayScoreMinus" aria-label="Away Score Minus">-</button>
+            <div class="score-display" id="awayScore">0</div>
+            <button id="awayScorePlus" aria-label="Away Score Plus">+</button>
           </div>
-          <div class="row-main">
-            <button id="resetGameBtn">Reset 10:00</button>
-          </div>
-        </div>
-      </div>
 
-      <div class="team-section away-team">
-        <div class="team-label">AWAY</div>
-        <input id="awayName" class="ctrl-input" type="text" maxlength="24" placeholder="Away Team" />
-
-        <div class="score-control">
-          <button id="awayScoreMinus">-</button>
-          <div class="score-display" id="awayScore">0</div>
-          <button id="awayScorePlus">+</button>
-        </div>
-
-        <div class="team-stats">
-          <div class="stat-item">
-            <span class="stat-label">FOULS</span>
-            <div class="mini-control">
-              <button id="awayFoulMinus">-</button>
-              <span class="stat-value" id="awayFouls">0</span>
-              <button id="awayFoulPlus">+</button>
+          <div class="team-stats">
+            <div class="stat-item">
+              <span class="stat-label">FOULS</span>
+              <div class="mini-control">
+                <button id="awayFoulMinus">-</button>
+                <span class="stat-value" id="awayFouls">0</span>
+                <button id="awayFoulPlus">+</button>
+              </div>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">TIMEOUTS</span>
+              <div class="mini-control">
+                <button id="awayTimeoutMinus">-</button>
+                <span class="stat-value" id="awayTimeouts">0</span>
+                <button id="awayTimeoutPlus">+</button>
+              </div>
             </div>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">TIMEOUTS</span>
-            <div class="mini-control">
-              <button id="awayTimeoutMinus">-</button>
-              <span class="stat-value" id="awayTimeouts">0</span>
-              <button id="awayTimeoutPlus">+</button>
-            </div>
+
+          <div class="score-add-row">
+            <button id="awayAdd1">1</button>
+            <button id="awayAdd2">2</button>
+            <button id="awayAdd3">3</button>
           </div>
-        </div>
-        <div class="score-add-row">
-          <button id="awayAdd1">1</button>
-          <button id="awayAdd2">2</button>
-          <button id="awayAdd3">3</button>
-        </div>
-        <div class="row-shot away-shot-row">
-          <button id="shot14Btn">Shot 14</button>
-          <button id="shot24Btn">Shot 24</button>
-          <button id="shotToggleBtn">SHOT CLOCK</button>
+
         </div>
       </div>
     </div>
   </div>
-
-  <button id="resetAllBtn" class="reset-all">Reset All</button>
-  <script type="module" src="controller.js"></script>
+  <button id="fullscreenBtn" class="fullscreen-btn" type="button">Full Screen</button>
+  <div id="landscapeOverlay" class="landscape-overlay" aria-hidden="true">
+    <div class="landscape-overlay-card">
+      <div class="landscape-overlay-title">LANDSCAPE ONLY</div>
+      <div class="landscape-overlay-text">Rotate your phone to landscape to use the controller.</div>
+    </div>
+  </div>
+  <script type="module" src="controller.js?v=20260228-5"></script>
 </body>
 </html>

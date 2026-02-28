@@ -1,4 +1,4 @@
-import { db } from "./firebase.js";
+import { db } from "./firebase.js?v=20260228-1";
 import {
   onValue,
   ref,
@@ -17,7 +17,6 @@ const OVERTIME_DURATION = 300;
 const DEFAULT_SHOT = 24;
 const DEFAULT_MAX_PERIOD = 4;
 const MAX_TEAM_FOULS = 5;
-const MAX_TEAM_TIMEOUTS = 3;
 const GAME_ZERO_BUZZER_SECONDS = 3;
 const SHOT_ZERO_BUZZER_SECONDS = 1;
 const LOCK_TTL_MS = 10000;
@@ -25,6 +24,40 @@ const LOCK_HEARTBEAT_MS = 3000;
 const NAME_AUTOSAVE_DELAY_MS = 350;
 const TIME_NUDGE_SECONDS = 60;
 const MAX_GAME_SECONDS = 15 * 60;
+const CANVAS_PRESETS = [
+  { name: "xl", width: 1600, height: 900, minWidth: 1760, minHeight: 900 },
+  { name: "lg", width: 1536, height: 864, minWidth: 1450, minHeight: 760 },
+  { name: "md", width: 1366, height: 768, minWidth: 1160, minHeight: 650 },
+  { name: "sm", width: 1200, height: 675, minWidth: 900, minHeight: 500 },
+  { name: "xs", width: 1024, height: 576, minWidth: 0, minHeight: 0 },
+];
+const CANVAS_SIZE_CLASSES = ["canvas-xl", "canvas-lg", "canvas-md", "canvas-sm", "canvas-xs"];
+const MIN_CANVAS_SCALE = 0.3;
+const CANVAS_GUTTER_PX = 10;
+const ALWAYS_ENABLED_KEYS = new Set([
+  "homeName",
+  "awayName",
+  "homeAdd1",
+  "homeAdd2",
+  "homeAdd3",
+  "awayAdd1",
+  "awayAdd2",
+  "awayAdd3",
+]);
+
+function getTimeoutAllowance(period, maxPeriod = DEFAULT_MAX_PERIOD) {
+  const safePeriod = Math.max(1, Number(period) || 1);
+  const safeMaxPeriod = Math.max(1, Number(maxPeriod) || DEFAULT_MAX_PERIOD);
+  if (safePeriod > safeMaxPeriod) return 1;
+  if (safePeriod === safeMaxPeriod) return 2;
+  return 1;
+}
+
+function getTimeoutLimitFromState(state = latest) {
+  const period = Math.max(1, Number(state?.period ?? 1));
+  const maxPeriod = Math.max(1, Number(state?.maxPeriod ?? DEFAULT_MAX_PERIOD));
+  return getTimeoutAllowance(period, maxPeriod);
+}
 
 const el = (id) => document.getElementById(id);
 const elements = {
@@ -76,6 +109,8 @@ const elements = {
   awayTimeoutPlus: el("awayTimeoutPlus"),
   resetAllBtn: el("resetAllBtn"),
   fullscreenBtn: el("fullscreenBtn"),
+  landscapeOverlay: el("landscapeOverlay"),
+  scoreboardContainer: document.querySelector(".scoreboard-container"),
 };
 
 let latest = null;
@@ -84,6 +119,8 @@ const controllerId = `ctrl-${Math.random().toString(36).slice(2, 10)}`;
 let hasControl = false;
 let lockTimer = null;
 let nameAutosaveTimer = null;
+let scaleRaf = null;
+let timeoutSyncPeriodKey = null;
 const nameDraft = {
   home: null,
   away: null,
@@ -118,7 +155,8 @@ function setControlsEnabled(enabled) {
       key === "fullscreenBtn" ||
       key === "gameMinutesInput" ||
       key === "gameSecondsInput" ||
-      key === "applyTimeBtn"
+      key === "applyTimeBtn" ||
+      ALWAYS_ENABLED_KEYS.has(key)
     ) return;
     node.disabled = !enabled;
   });
@@ -138,6 +176,7 @@ function updateFullscreenUi() {
   if (elements.fullscreenBtn) {
     elements.fullscreenBtn.textContent = active ? "Exit Full Screen" : "Full Screen";
   }
+  refreshViewportLayout();
 }
 
 async function toggleFullscreen() {
@@ -154,7 +193,110 @@ async function toggleFullscreen() {
     // ignore unsupported environments
   } finally {
     updateFullscreenUi();
+    tryLockLandscapeOrientation();
   }
+}
+
+function isPortraitViewport() {
+  const orientationType = screen.orientation?.type;
+  if (typeof orientationType === "string") {
+    return orientationType.startsWith("portrait");
+  }
+
+  const orientationMedia = window.matchMedia?.("(orientation: portrait)");
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  const byDimensions = viewportHeight > viewportWidth;
+
+  if (orientationMedia && typeof orientationMedia.matches === "boolean") {
+    return orientationMedia.matches === byDimensions
+      ? orientationMedia.matches
+      : byDimensions;
+  }
+  return byDimensions;
+}
+
+function readSafeInset(name) {
+  const value = Number.parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue(name)
+  );
+  return Number.isFinite(value) ? Math.max(0, value) : 0;
+}
+
+function applyOrientationUiState() {
+  const isPortrait = isPortraitViewport();
+  document.body.classList.toggle("portrait-blocked", isPortrait);
+  if (elements.landscapeOverlay) {
+    elements.landscapeOverlay.setAttribute("aria-hidden", isPortrait ? "false" : "true");
+  }
+}
+
+async function tryLockLandscapeOrientation() {
+  if (!screen.orientation?.lock) return;
+  try {
+    await screen.orientation.lock("landscape");
+  } catch (_) {
+    // browsers can require fullscreen or user gesture
+  }
+}
+
+function applyControllerCanvasScale() {
+  const canvas = elements.scoreboardContainer;
+  if (!canvas) return;
+
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+  const safeTop = readSafeInset("--safe-top");
+  const safeRight = readSafeInset("--safe-right");
+  const safeBottom = readSafeInset("--safe-bottom");
+  const safeLeft = readSafeInset("--safe-left");
+  const preset = CANVAS_PRESETS.find((item) => viewportWidth >= item.minWidth && viewportHeight >= item.minHeight)
+    ?? CANVAS_PRESETS[CANVAS_PRESETS.length - 1];
+
+  const availableWidth = Math.max(
+    1,
+    viewportWidth - safeLeft - safeRight - CANVAS_GUTTER_PX * 2
+  );
+  const availableHeight = Math.max(
+    1,
+    viewportHeight - safeTop - safeBottom - CANVAS_GUTTER_PX * 2
+  );
+  const scale = Math.min(
+    availableWidth / preset.width,
+    availableHeight / preset.height,
+    1
+  );
+  const clampedScale = Math.max(MIN_CANVAS_SCALE, scale);
+  const scaledWidth = preset.width * clampedScale;
+  const scaledHeight = preset.height * clampedScale;
+  const offsetX = safeLeft + CANVAS_GUTTER_PX + Math.max(0, (availableWidth - scaledWidth) / 2);
+  const offsetY = safeTop + CANVAS_GUTTER_PX + Math.max(0, (availableHeight - scaledHeight) / 2);
+  const tinyDevice = clampedScale < 0.56 || viewportHeight < 430;
+
+  canvas.style.width = `${preset.width}px`;
+  canvas.style.height = `${preset.height}px`;
+  canvas.style.left = `${offsetX}px`;
+  canvas.style.top = `${offsetY}px`;
+  canvas.style.transformOrigin = "top left";
+  canvas.style.transform = `scale(${clampedScale})`;
+  document.body.classList.remove(...CANVAS_SIZE_CLASSES);
+  document.body.classList.add(`canvas-${preset.name}`);
+  document.body.classList.toggle("tiny-device", tinyDevice);
+}
+
+function queueControllerCanvasScale() {
+  if (scaleRaf !== null) {
+    cancelAnimationFrame(scaleRaf);
+  }
+  scaleRaf = requestAnimationFrame(() => {
+    scaleRaf = null;
+    applyControllerCanvasScale();
+  });
+}
+
+function refreshViewportLayout() {
+  applyOrientationUiState();
+  queueControllerCanvasScale();
 }
 
 function paintBodyState(data) {
@@ -207,9 +349,13 @@ function buildZeroTimeTransition(current) {
   const isTie = homeScore === awayScore;
 
   if (hasNextQuarter) {
+    const nextPeriod = period + 1;
+    const nextTimeouts = getTimeoutAllowance(nextPeriod, maxPeriod);
     return {
       ...current,
-      period: period + 1,
+      period: nextPeriod,
+      homeTimeouts: nextTimeouts,
+      awayTimeouts: nextTimeouts,
       gameDuration: GAME_DURATION,
       elapsedBeforePause: 0,
       clockStartedAt: null,
@@ -229,10 +375,14 @@ function buildZeroTimeTransition(current) {
 
   if (isTie) {
     const nextOvertime = Number(current.overtime ?? 0) + 1;
+    const nextPeriod = maxPeriod + nextOvertime;
+    const nextTimeouts = getTimeoutAllowance(nextPeriod, maxPeriod);
     return {
       ...current,
       overtime: nextOvertime,
-      period: maxPeriod + nextOvertime,
+      period: nextPeriod,
+      homeTimeouts: nextTimeouts,
+      awayTimeouts: nextTimeouts,
       gameDuration: OVERTIME_DURATION,
       elapsedBeforePause: 0,
       clockStartedAt: null,
@@ -267,6 +417,7 @@ function buildZeroTimeTransition(current) {
 async function ensureScoreboardExists() {
   const snapshot = await new Promise((resolve) => onValue(scoreboardRef, resolve, { onlyOnce: true }));
   if (snapshot.exists()) return;
+  const initialTimeouts = getTimeoutAllowance(1, DEFAULT_MAX_PERIOD);
   await set(scoreboardRef, {
     homeName: "HOME",
     awayName: "AWAY",
@@ -274,8 +425,8 @@ async function ensureScoreboardExists() {
     awayScore: 0,
     homeFouls: 0,
     awayFouls: 0,
-    homeTimeouts: 0,
-    awayTimeouts: 0,
+    homeTimeouts: initialTimeouts,
+    awayTimeouts: initialTimeouts,
     period: 1,
     maxPeriod: DEFAULT_MAX_PERIOD,
     overtime: 0,
@@ -300,8 +451,9 @@ async function ensureScoreboardExists() {
 function paint(data) {
   const homeFouls = Math.max(0, Number(data.homeFouls ?? 0));
   const awayFouls = Math.max(0, Number(data.awayFouls ?? 0));
-  const homeTimeouts = Math.min(MAX_TEAM_TIMEOUTS, Math.max(0, Number(data.homeTimeouts ?? 0)));
-  const awayTimeouts = Math.min(MAX_TEAM_TIMEOUTS, Math.max(0, Number(data.awayTimeouts ?? 0)));
+  const timeoutLimit = getTimeoutLimitFromState(data);
+  const homeTimeouts = Math.min(timeoutLimit, Math.max(0, Number(data.homeTimeouts ?? 0)));
+  const awayTimeouts = Math.min(timeoutLimit, Math.max(0, Number(data.awayTimeouts ?? 0)));
 
   elements.homeScore.textContent = `${data.homeScore ?? 0}`;
   elements.awayScore.textContent = `${data.awayScore ?? 0}`;
@@ -328,6 +480,23 @@ function paint(data) {
   if (elements.quarterSelect.value !== period) {
     elements.quarterSelect.value = period;
   }
+  if (elements.posNoneBtn) {
+    elements.posNoneBtn.textContent = `QTR ${period}`;
+  }
+
+  if (elements.homeTimeoutPlus) {
+    elements.homeTimeoutPlus.disabled = !hasControl || homeTimeouts >= timeoutLimit;
+  }
+  if (elements.awayTimeoutPlus) {
+    elements.awayTimeoutPlus.disabled = !hasControl || awayTimeouts >= timeoutLimit;
+  }
+  if (elements.homeTimeoutMinus) {
+    elements.homeTimeoutMinus.disabled = !hasControl || homeTimeouts <= 0;
+  }
+  if (elements.awayTimeoutMinus) {
+    elements.awayTimeoutMinus.disabled = !hasControl || awayTimeouts <= 0;
+  }
+
   const remaining = getGameRemaining(data);
   const minutes = Math.floor(remaining / 60);
   const seconds = Math.floor(remaining % 60);
@@ -343,8 +512,9 @@ function paint(data) {
   paintBodyState(data);
   paintPossession(data.possession ?? "none");
 
-  elements.gameToggleBtn.textContent = data.clockRunning ? "Pause Game Clock" : "Play Game Clock";
-  elements.shotToggleBtn.textContent = data.shotClockRunning ? "Pause Shot" : "SHOT CLOCK";
+  elements.gameToggleBtn.textContent = data.clockRunning ? "PAUSE" : "START";
+  const shotBase = Math.round(data.shotPartialReset ?? data.shotDuration ?? DEFAULT_SHOT);
+  elements.shotToggleBtn.textContent = data.shotClockRunning ? "PAUSE SHOT" : `SHOT +- CLOCK ${shotBase}`;
 }
 
 function paintPossession(possession) {
@@ -361,8 +531,8 @@ async function setPossession(possession) {
   });
 }
 
-async function mutateNumber(path, delta, min = 0, max = Number.POSITIVE_INFINITY) {
-  if (!hasControl) return;
+async function mutateNumber(path, delta, min = 0, max = Number.POSITIVE_INFINITY, requireControl = true) {
+  if (requireControl && !hasControl) return;
   await runTransaction(ref(db, `${SCOREBOARD_PATH}/${path}`), (current) => {
     const next = (current ?? 0) + delta;
     const bounded = Math.max(min, Math.min(max, next));
@@ -370,10 +540,24 @@ async function mutateNumber(path, delta, min = 0, max = Number.POSITIVE_INFINITY
   });
 }
 
-async function saveNames() {
+async function mutateTimeout(path, delta) {
   if (!hasControl) return;
-  const homeName = (nameDraft.home ?? elements.homeName.value).trim() || "HOME";
-  const awayName = (nameDraft.away ?? elements.awayName.value).trim() || "AWAY";
+  await runTransaction(scoreboardRef, (current) => {
+    if (!current) return current;
+    const timeoutLimit = getTimeoutLimitFromState(current);
+    const currentValue = Math.max(0, Number(current[path] ?? 0));
+    const nextValue = Math.max(0, Math.min(timeoutLimit, currentValue + delta));
+    return {
+      ...current,
+      [path]: nextValue,
+      lastUpdated: now(),
+    };
+  });
+}
+
+async function saveNames() {
+  const homeName = (nameDraft.home ?? elements.homeName.value).trim().toUpperCase() || "HOME";
+  const awayName = (nameDraft.away ?? elements.awayName.value).trim().toUpperCase() || "AWAY";
   if (latest && homeName === (latest.homeName ?? "HOME") && awayName === (latest.awayName ?? "AWAY")) {
     nameDraft.home = null;
     nameDraft.away = null;
@@ -396,7 +580,6 @@ function clearNameAutosaveTimer() {
 }
 
 function queueNameAutosave() {
-  if (!hasControl) return;
   clearNameAutosaveTimer();
   nameAutosaveTimer = setTimeout(() => {
     nameAutosaveTimer = null;
@@ -413,12 +596,46 @@ async function flushNameAutosave() {
 
 async function setQuarter() {
   if (!hasControl) return;
+  const selectedPeriod = Number(elements.quarterSelect.value) || 1;
+  const quarterTimeouts = getTimeoutAllowance(selectedPeriod, DEFAULT_MAX_PERIOD);
   await update(scoreboardRef, {
-    period: Number(elements.quarterSelect.value) || 1,
+    period: selectedPeriod,
+    homeTimeouts: quarterTimeouts,
+    awayTimeouts: quarterTimeouts,
     maxPeriod: DEFAULT_MAX_PERIOD,
     overtime: 0,
     lastUpdated: now(),
   });
+}
+
+async function syncTimeoutAllowanceForPeriod(data = latest) {
+  if (!hasControl || !data) return;
+  const period = Math.max(1, Number(data.period ?? 1));
+  const maxPeriod = Math.max(1, Number(data.maxPeriod ?? DEFAULT_MAX_PERIOD));
+  const periodKey = `${period}:${maxPeriod}`;
+  if (timeoutSyncPeriodKey === periodKey) return;
+
+  const targetTimeouts = getTimeoutAllowance(period, maxPeriod);
+  const parsedHome = Number(data.homeTimeouts);
+  const parsedAway = Number(data.awayTimeouts);
+  const nextHomeTimeouts = Number.isFinite(parsedHome)
+    ? Math.max(0, Math.min(targetTimeouts, parsedHome))
+    : targetTimeouts;
+  const nextAwayTimeouts = Number.isFinite(parsedAway)
+    ? Math.max(0, Math.min(targetTimeouts, parsedAway))
+    : targetTimeouts;
+
+  if (nextHomeTimeouts === parsedHome && nextAwayTimeouts === parsedAway) {
+    timeoutSyncPeriodKey = periodKey;
+    return;
+  }
+
+  await update(scoreboardRef, {
+    homeTimeouts: nextHomeTimeouts,
+    awayTimeouts: nextAwayTimeouts,
+    lastUpdated: now(),
+  });
+  timeoutSyncPeriodKey = periodKey;
 }
 
 async function toggleGameClock() {
@@ -560,6 +777,7 @@ async function endGame() {
 
 async function resetAll() {
   if (!hasControl) return;
+  const initialTimeouts = getTimeoutAllowance(1, DEFAULT_MAX_PERIOD);
   await set(scoreboardRef, {
     homeName: "HOME",
     awayName: "AWAY",
@@ -567,8 +785,8 @@ async function resetAll() {
     awayScore: 0,
     homeFouls: 0,
     awayFouls: 0,
-    homeTimeouts: 0,
-    awayTimeouts: 0,
+    homeTimeouts: initialTimeouts,
+    awayTimeouts: initialTimeouts,
     period: 1,
     maxPeriod: DEFAULT_MAX_PERIOD,
     overtime: 0,
@@ -626,11 +844,19 @@ async function toggleShotClock() {
 
 function bindEvents() {
   elements.homeName.addEventListener("input", (e) => {
-    nameDraft.home = e.target.value;
+    const nextValue = String(e.target.value ?? "").toUpperCase();
+    if (e.target.value !== nextValue) {
+      e.target.value = nextValue;
+    }
+    nameDraft.home = nextValue;
     queueNameAutosave();
   });
   elements.awayName.addEventListener("input", (e) => {
-    nameDraft.away = e.target.value;
+    const nextValue = String(e.target.value ?? "").toUpperCase();
+    if (e.target.value !== nextValue) {
+      e.target.value = nextValue;
+    }
+    nameDraft.away = nextValue;
     queueNameAutosave();
   });
   elements.homeName.addEventListener("keydown", (e) => {
@@ -663,7 +889,7 @@ function bindEvents() {
   elements.homeTimeMinusBtn?.addEventListener("click", () => nudgeGameTime(-TIME_NUDGE_SECONDS));
   elements.homeTimePlusBtn?.addEventListener("click", () => nudgeGameTime(TIME_NUDGE_SECONDS));
   elements.gameToggleBtn.addEventListener("click", toggleGameClock);
-  elements.resetGameBtn.addEventListener("click", resetGameClock);
+  elements.resetGameBtn?.addEventListener("click", resetGameClock);
   elements.endGameBtn?.addEventListener("click", endGame);
   elements.shotToggleBtn.addEventListener("click", toggleShotClock);
   elements.shot14Btn.addEventListener("click", () => setShotDuration(14));
@@ -675,30 +901,41 @@ function bindEvents() {
 
   elements.homeScoreMinus.addEventListener("click", () => mutateNumber("homeScore", -1));
   elements.homeScorePlus.addEventListener("click", () => mutateNumber("homeScore", 1));
-  elements.homeAdd1.addEventListener("click", () => mutateNumber("homeScore", 1));
-  elements.homeAdd2.addEventListener("click", () => mutateNumber("homeScore", 2));
-  elements.homeAdd3.addEventListener("click", () => mutateNumber("homeScore", 3));
+  elements.homeAdd1.addEventListener("click", () => mutateNumber("homeScore", 1, 0, Number.POSITIVE_INFINITY, false));
+  elements.homeAdd2.addEventListener("click", () => mutateNumber("homeScore", 2, 0, Number.POSITIVE_INFINITY, false));
+  elements.homeAdd3.addEventListener("click", () => mutateNumber("homeScore", 3, 0, Number.POSITIVE_INFINITY, false));
   elements.awayScoreMinus.addEventListener("click", () => mutateNumber("awayScore", -1));
   elements.awayScorePlus.addEventListener("click", () => mutateNumber("awayScore", 1));
-  elements.awayAdd1.addEventListener("click", () => mutateNumber("awayScore", 1));
-  elements.awayAdd2.addEventListener("click", () => mutateNumber("awayScore", 2));
-  elements.awayAdd3.addEventListener("click", () => mutateNumber("awayScore", 3));
+  elements.awayAdd1.addEventListener("click", () => mutateNumber("awayScore", 1, 0, Number.POSITIVE_INFINITY, false));
+  elements.awayAdd2.addEventListener("click", () => mutateNumber("awayScore", 2, 0, Number.POSITIVE_INFINITY, false));
+  elements.awayAdd3.addEventListener("click", () => mutateNumber("awayScore", 3, 0, Number.POSITIVE_INFINITY, false));
 
   elements.homeFoulMinus.addEventListener("click", () => mutateNumber("homeFouls", -1, 0, MAX_TEAM_FOULS));
   elements.homeFoulPlus.addEventListener("click", () => mutateNumber("homeFouls", 1, 0, MAX_TEAM_FOULS));
   elements.awayFoulMinus.addEventListener("click", () => mutateNumber("awayFouls", -1, 0, MAX_TEAM_FOULS));
   elements.awayFoulPlus.addEventListener("click", () => mutateNumber("awayFouls", 1, 0, MAX_TEAM_FOULS));
 
-  elements.homeTimeoutMinus.addEventListener("click", () => mutateNumber("homeTimeouts", -1, 0, MAX_TEAM_TIMEOUTS));
-  elements.homeTimeoutPlus.addEventListener("click", () => mutateNumber("homeTimeouts", 1, 0, MAX_TEAM_TIMEOUTS));
-  elements.awayTimeoutMinus.addEventListener("click", () => mutateNumber("awayTimeouts", -1, 0, MAX_TEAM_TIMEOUTS));
-  elements.awayTimeoutPlus.addEventListener("click", () => mutateNumber("awayTimeouts", 1, 0, MAX_TEAM_TIMEOUTS));
+  elements.homeTimeoutMinus.addEventListener("click", () => mutateTimeout("homeTimeouts", -1));
+  elements.homeTimeoutPlus.addEventListener("click", () => mutateTimeout("homeTimeouts", 1));
+  elements.awayTimeoutMinus.addEventListener("click", () => mutateTimeout("awayTimeouts", -1));
+  elements.awayTimeoutPlus.addEventListener("click", () => mutateTimeout("awayTimeouts", 1));
   elements.fullscreenBtn?.addEventListener("click", toggleFullscreen);
 
   document.addEventListener("fullscreenchange", updateFullscreenUi);
   document.addEventListener("keydown", (e) => {
     if (e.key === "f" || e.key === "F") toggleFullscreen();
   });
+  window.addEventListener("resize", refreshViewportLayout);
+  window.addEventListener("orientationchange", refreshViewportLayout);
+  window.visualViewport?.addEventListener("resize", refreshViewportLayout);
+  screen.orientation?.addEventListener?.("change", refreshViewportLayout);
+  document.addEventListener(
+    "pointerdown",
+    () => {
+      tryLockLandscapeOrientation();
+    },
+    { once: true }
+  );
 }
 
 function startLocalRefresh() {
@@ -755,6 +992,11 @@ async function tryAcquireLock() {
   }
   setControlsEnabled(hasControl);
   updateControlText();
+  if (hasControl && latest) {
+    syncTimeoutAllowanceForPeriod(latest).catch((error) => {
+      console.error("Timeout allocation sync failed:", error);
+    });
+  }
 }
 
 function startLockHeartbeat() {
@@ -786,6 +1028,8 @@ async function init() {
   await ensureScoreboardExists();
   bindEvents();
   updateFullscreenUi();
+  refreshViewportLayout();
+  tryLockLandscapeOrientation();
   setControlsEnabled(false);
   updateControlText();
 
@@ -795,8 +1039,18 @@ async function init() {
 
   onValue(scoreboardRef, (snapshot) => {
     if (!snapshot.exists()) return;
+    const prevPeriod = latest ? Number(latest.period ?? 1) : null;
     latest = snapshot.val();
+    const currentPeriod = Number(latest.period ?? 1);
+    if (prevPeriod !== null && currentPeriod !== prevPeriod) {
+      timeoutSyncPeriodKey = null;
+    }
     paint(latest);
+    if (hasControl) {
+      syncTimeoutAllowanceForPeriod(latest).catch((error) => {
+        console.error("Timeout allocation sync failed:", error);
+      });
+    }
   });
 
   await tryAcquireLock();
